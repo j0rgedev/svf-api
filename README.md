@@ -1,93 +1,90 @@
 # SVF API
 
-Este es el diseño de la API para el sistema de matriculas
+API design for the Enrollment system
 
 ## API Reference
 
 ## Base URL
-/api/v1/alumno/matricula/
+/api/v1/student/enrollment/
 
-#### Validar inicio de sesión
+#### Login validation
 
 ```http
-  POST /login/${cod}
-
+  POST /login/${studentcod}
 ```
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `cod` | `string` | *Requerido*. Tu código de alumno |
+| `cod` | `string` | *Required*. Your student code |
 
-`Cuerpo`
+`Body`
 ```json
 {
-  "codigo_alumno": "",
-  "contraseña": ""
+  "studentcod": "",
+  "password": ""
 }
 ```
 
 
-`Respuesta`
+`Response`
 ```json
 {
   "token": ""
 }
 ```
 
-#### Registrar alumno
+#### Register student
 
 ```http
-  POST /registrar/${cod}
-
+  POST /register/${studentcod}
 ```
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `cod` | `string` | *Requerido*. Tu código de alumno |
+| `cod` | `string` | *Required*. Your studentcod |
 
-`Cuerpo`
+`Body`
 ```json
 {
-  "contraseña": ""
+  "password": ""
 }
 ```
 
 
-`Respuesta`
+`Response`
 ```json
 {
   "token": ""
 }
 ```
 
-#### Validacion por sms
+#### Validation by SMS
 
 ```http
-  POST /validacion
-
+  POST /validation 
 ```
 
-`Cuerpo`
+`Body`
 ```json
 {
   "token": "",
-  "codigo": ""
+  "studentcod": ""
 }
 ```
 
 
-`Respuesta`
+`Response`
 ```json
 {
-  "sms": ""
+  "msg": ""
 }
 ```
 
-#### Proceso matricula 1er paso
+#### Process enrollment
 
 ```http
   GET /
 
 ```
-`Cuerpo`
+`Body`
 ```json
 {
   "token": ""
@@ -95,23 +92,23 @@ Este es el diseño de la API para el sistema de matriculas
 ```
 
 
-`Respuesta`
+`Response`
 ```json
 {
-  "codigo": "",
-  "nivel": "",
-  "grado": ""
+  "studentcod": "",
+  "currentlevel": "",
+  "grade": ""
 }
 ```
 
-#### Detalles de matricula
+#### Enrollment details
 
 ```http
   GET /details
 
 ```
 
-`Cuerpo`
+`Body`
 ```json
 {
   "token": ""
@@ -119,59 +116,57 @@ Este es el diseño de la API para el sistema de matriculas
 ```
 
 
-`Respuesta`
+`Response`
 ```json
 {
-  "año_escolar": "",
-  "info_principal": "",
-  "tyc": [
+  "schoolyear": "",
+  "main_info": "",
+  "tandc": [
       {
-          "titulo": "",
-          "cuerpo": ""
+          "title": "",
+          "body": ""
       },
       {
-          "titulo": "",
-          "cuerpo": ""
+          "title": "",
+          "body": ""
       },
       {
-          "titulo": "",
-          "cuerpo": ""
+          "title": "",
+          "body": ""
       }
   ],
-  "montos": [
+  "amounts": [
       {
-          "nivel": "",
-          "costo": ""
+          "level": "",
+          "cost": ""
       },
       {
-          "nivel": "",
-          "costo": ""
+          "level": "",
+          "cost": ""
       },
       {
-          "nivel": "",
-          "costo": ""
+          "level": "",
+          "cost": ""
       }
   ]
 }
 ```
-#### Confirmacion de matricula
+#### Enrollment confirmation
 
 ```http
-  POST /confirmacion
-
+  POST /confirmation
 ```
 
-`Cuerpo`
+`Body`
 ```json
 {
   "token": ""
 }
 ```
 
-
-`Respuesta`
+`Response`
 ```json
 {
-  "nro_matricula": ""
+  "enrollmentcod": ""
 }
 ```
