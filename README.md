@@ -1,6 +1,6 @@
 # SVF API
 
-API design for the Enrollment system
+API design for SVF Enrollment System
 
 ## API Reference
 
@@ -19,7 +19,7 @@ API design for the Enrollment system
 `Body`
 ```json
 {
-  "studentcod": "",
+  "studentCod": "",
   "password": ""
 }
 ```
@@ -66,7 +66,7 @@ API design for the Enrollment system
 ```json
 {
   "token": "",
-  "studentcod": ""
+  "studentCod": ""
 }
 ```
 
@@ -78,7 +78,7 @@ API design for the Enrollment system
 }
 ```
 
-#### Process enrollment
+#### Enrollment Process
 
 ```http
   GET /
@@ -95,9 +95,11 @@ API design for the Enrollment system
 `Response`
 ```json
 {
-  "studentcod": "",
-  "currentlevel": "",
-  "grade": ""
+  "studentCod": "",
+  "currentLevel": "",
+  "grade": "",
+  "names": "",
+  "lastnames": ""
 }
 ```
 
@@ -119,9 +121,9 @@ API design for the Enrollment system
 `Response`
 ```json
 {
-  "schoolyear": "",
-  "main_info": "",
-  "tandc": [
+  "schoolYear": "",
+  "mainInfo": "",
+  "terms": [
       {
           "title": "",
           "body": ""
@@ -167,6 +169,6 @@ API design for the Enrollment system
 `Response`
 ```json
 {
-  "enrollmentcod": ""
+  "enrollmentCod": ""
 }
 ```
