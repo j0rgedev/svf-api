@@ -1,4 +1,4 @@
 package Student.Repository;
 
-public interface StudentRepository {
+public interface StudentRepository{
 }
