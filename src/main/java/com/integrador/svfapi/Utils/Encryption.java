@@ -12,7 +12,7 @@ import java.util.Random;
 public class Encryption {
 
     public static void main(String[] args) {
-        String pwd = "micontraseña123456";
+        String pwd = "jorgeAnte3008";
         String salt = getSaltvalue(30);
         String securePassword = generateSecurePassword(pwd, salt);
         System.out.println("Secure Password: " + securePassword);
