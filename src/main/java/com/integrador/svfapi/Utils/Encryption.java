@@ -1,5 +1,8 @@
 package com.integrador.svfapi.Utils;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
@@ -9,15 +12,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 
+@NoArgsConstructor
 public class Encryption {
-
-    public static void main(String[] args) {
-        String pwd = "jorgeAnte3008";
-        String salt = getSaltvalue(30);
-        String securePassword = generateSecurePassword(pwd, salt);
-        System.out.println("Secure Password: " + securePassword);
-        System.out.println("Salt: " + salt);
-    }
 
     private static final Random random = new SecureRandom();
     private static final String characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -25,7 +21,7 @@ public class Encryption {
     private static final int keylength = 256;
 
     /* Method to generate the salt value. */
-    public static String getSaltvalue(int length)
+    public String getSaltvalue(int length)
     {
         StringBuilder finalval = new StringBuilder(length);
 
@@ -38,7 +34,7 @@ public class Encryption {
     }
 
     /* Method to generate the hash value */
-    public static byte[] hash(char[] password, byte[] salt)
+    public byte[] hash(char[] password, byte[] salt)
     {
         PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keylength);
         Arrays.fill(password, Character.MIN_VALUE);
@@ -58,7 +54,7 @@ public class Encryption {
     }
 
     /* Method to encrypt the password using the original password and salt value. */
-    public static String generateSecurePassword(String password, String salt)
+    public String generateSecurePassword(String password, String salt)
     {
         String finalval = null;
 
@@ -70,7 +66,7 @@ public class Encryption {
     }
 
     /* Method to verify if both password matches or not */
-    public static boolean verifyUserPassword(String providedPassword,
+    public boolean verifyUserPassword(String providedPassword,
                                              String securedPassword, String salt)
     {
         boolean finalval = false;

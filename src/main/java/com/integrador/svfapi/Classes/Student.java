@@ -37,6 +37,18 @@ public class Student {
     )
     private Date birthday;
     @Column(
+            name = "password",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String password;
+    @Column(
+            name = "salt",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String salt;
+    @Column(
             name = "dni",
             nullable = false,
             columnDefinition = "TEXT"
