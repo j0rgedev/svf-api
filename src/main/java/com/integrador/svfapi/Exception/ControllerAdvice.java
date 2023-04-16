@@ -24,7 +24,7 @@ public class ControllerAdvice {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleException(Exception e) {
-        ErrorDTO errorDTO = new ErrorDTO(500, "Internal server error");
+        ErrorDTO errorDTO = new ErrorDTO(500, "Internal server error\n"+e.getMessage());
         return ResponseEntity.status(500).body(errorDTO);
     }
 

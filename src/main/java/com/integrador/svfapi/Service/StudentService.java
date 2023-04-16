@@ -18,9 +18,9 @@ import java.util.Map;
 public class StudentService {
 
     @Autowired
-    private StudentRepository studentRepository;
-    @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private StudentRepository studentRepository;
 
     private final Encryption encryption = new Encryption();
 
@@ -45,7 +45,10 @@ public class StudentService {
                 matchStudent.getPassword(),
                 matchStudent.getSalt())) {
             String key= jwtUtil.generateToken(studentLogin);
-            return ResponseEntity.ok().body(Map.of("key", key ));
+            if(key == null) {
+                throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
+            }
+            return ResponseEntity.ok().body(Map.of("token", key));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
         }
