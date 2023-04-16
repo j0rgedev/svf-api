@@ -10,7 +10,7 @@ API design for SVF Enrollment System
 #### Login validation
 
 ```http
-  POST /login/
+POST /login/
 ```
 
 `Body`
@@ -29,10 +29,10 @@ API design for SVF Enrollment System
 }
 ```
 
-#### Register student
+#### Update student password
 
 ```http
-  POST /register/
+POST /updatepassword/
 ```
 
 `Body`
@@ -53,7 +53,7 @@ API design for SVF Enrollment System
 #### Validation by SMS
 
 ```http
-  POST /validation 
+POST /validation 
 ```
 
 `Body`
@@ -75,8 +75,7 @@ API design for SVF Enrollment System
 #### Enrollment Process
 
 ```http
-  POST /
-
+POST /
 ```
 `Body`
 ```json
@@ -102,8 +101,7 @@ API design for SVF Enrollment System
 #### Enrollment details
 
 ```http
-  GET /details
-
+GET /details
 ```
 
 
@@ -146,7 +144,7 @@ API design for SVF Enrollment System
 #### Enrollment confirmation
 
 ```http
-  POST /confirmation
+POST /confirmation
 ```
 
 `Body`
