@@ -10,11 +10,8 @@ API design for SVF Enrollment System
 #### Login validation
 
 ```http
-  POST /login/${studentcod}
+  POST /login/
 ```
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `cod` | `string` | *Required*. Your student code |
 
 `Body`
 ```json
@@ -35,11 +32,8 @@ API design for SVF Enrollment System
 #### Register student
 
 ```http
-  POST /register/${studentcod}
+  POST /register/
 ```
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `cod` | `string` | *Required*. Your studentcod |
 
 `Body`
 ```json
@@ -66,7 +60,7 @@ API design for SVF Enrollment System
 ```json
 {
   "token": "",
-  "studentCod": ""
+  "sms": ""
 }
 ```
 
@@ -81,7 +75,7 @@ API design for SVF Enrollment System
 #### Enrollment Process
 
 ```http
-  GET /
+  POST /
 
 ```
 `Body`
@@ -96,10 +90,12 @@ API design for SVF Enrollment System
 ```json
 {
   "studentCod": "",
-  "currentLevel": "",
-  "grade": "",
   "names": "",
-  "lastnames": ""
+  "lastNames": "",
+  "dni": "",
+  "newLevel": "",
+  "newGrade": ""
+  
 }
 ```
 
@@ -110,12 +106,6 @@ API design for SVF Enrollment System
 
 ```
 
-`Body`
-```json
-{
-  "token": ""
-}
-```
 
 
 `Response`
@@ -169,6 +159,6 @@ API design for SVF Enrollment System
 `Response`
 ```json
 {
-  "enrollmentCod": ""
+  "enrollmentId": ""
 }
 ```
