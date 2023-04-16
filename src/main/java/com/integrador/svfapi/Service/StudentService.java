@@ -5,6 +5,7 @@ import com.integrador.svfapi.Exception.BusinessException;
 import com.integrador.svfapi.Repository.StudentRepository;
 import com.integrador.svfapi.Classes.Student;
 import com.integrador.svfapi.Utils.Encryption;
+import com.integrador.svfapi.Utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ public class StudentService {
 
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private final Encryption encryption = new Encryption();
 
@@ -41,7 +44,8 @@ public class StudentService {
                 studentLogin.getPassword(),
                 matchStudent.getPassword(),
                 matchStudent.getSalt())) {
-            return ResponseEntity.ok().body(Map.of("studentCod", matchStudent.getStudentCod()));
+            String key= jwtUtil.generateToken(studentLogin);
+            return ResponseEntity.ok().body(Map.of("key", key ));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
         }
