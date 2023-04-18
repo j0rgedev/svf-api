@@ -7,10 +7,33 @@ API design for SVF Enrollment System
 ## Base URL
 /api/v1/student/enrollment/
 
-#### Login validation
+### Login validation
+This endpoint is used to validate the student's login credentials.
 
 ```http
 POST /login/
+```
+
+`Body`
+```json
+{
+  "studentCod": "",
+  "password": ""
+}
+```
+
+`Response`
+```json
+{
+  "accessToken": ""
+}
+```
+
+### Update student password
+This endpoint is used to update the student's password.
+
+```http
+PUT /updatepassword/
 ```
 
 `Body`
@@ -25,20 +48,28 @@ POST /login/
 `Response`
 ```json
 {
-  "token": ""
+  "accessToken": ""
 }
 ```
 
-#### Update student password
+### Validation by SMS
+This endpoint is used to verify a student's identity via SMS code.
 
 ```http
-POST /updatepassword/
+POST /smsvalidation 
+```
+
+`Header`
+```json
+{
+  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
+}
 ```
 
 `Body`
 ```json
 {
-  "password": ""
+  "smsCode": ""
 }
 ```
 
@@ -46,41 +77,20 @@ POST /updatepassword/
 `Response`
 ```json
 {
-  "token": ""
+  "message": ""
 }
 ```
 
-#### Validation by SMS
-
-```http
-POST /validation 
-```
-
-`Body`
-```json
-{
-  "token": "",
-  "sms": ""
-}
-```
-
-
-`Response`
-```json
-{
-  "msg": ""
-}
-```
-
-#### Enrollment Process
+### Enrollment Process
+This endpoint is used to start the enrollment process for a student.
 
 ```http
 POST /
 ```
-`Body`
+`Header`
 ```json
 {
-  "token": ""
+  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
 }
 ```
 
@@ -98,13 +108,12 @@ POST /
 }
 ```
 
-#### Enrollment details
+### Enrollment details
+This endpoint is used to retrieve the enrollment details.
 
 ```http
 GET /details
 ```
-
-
 
 `Response`
 ```json
@@ -142,15 +151,16 @@ GET /details
 }
 ```
 #### Enrollment confirmation
+This endpoint is used to confirm the student's enrollment.
 
 ```http
 POST /confirmation
 ```
 
-`Body`
+`Header`
 ```json
 {
-  "token": ""
+  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
 }
 ```
 
