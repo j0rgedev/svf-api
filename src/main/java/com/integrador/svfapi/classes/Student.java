@@ -1,4 +1,4 @@
-package com.integrador.svfapi.Classes;
+package com.integrador.svfapi.classes;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,5 @@
-package com.integrador.svfapi.Utils;
+package com.integrador.svfapi.utils;
 
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import javax.crypto.SecretKeyFactory;
@@ -13,8 +12,7 @@ import java.util.Base64;
 import java.util.Random;
 
 @NoArgsConstructor
-public class Encryption {
-
+public class PasswordEncryption {
     private static final Random random = new SecureRandom();
     private static final String characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final int iterations = 10000;

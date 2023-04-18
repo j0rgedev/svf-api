@@ -1,4 +1,4 @@
-package com.integrador.svfapi.Classes;
+package com.integrador.svfapi.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class StudentLogin {
+public class StudentDTO {
     @NotNull
     @NotBlank
     private String studentCod;

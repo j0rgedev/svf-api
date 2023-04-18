@@ -1,7 +1,7 @@
-package com.integrador.svfapi.Controllers;
+package com.integrador.svfapi.controllers;
 
-import com.integrador.svfapi.Classes.StudentLogin;
-import com.integrador.svfapi.Service.StudentService;
+import com.integrador.svfapi.dto.StudentDTO;
+import com.integrador.svfapi.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,8 +16,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @Validated @RequestBody StudentLogin studentLogin
+            @Validated @RequestBody StudentDTO studentDTO
     ) {
-        return studentService.login(studentLogin);
+        return studentService.login(studentDTO);
     }
 }
