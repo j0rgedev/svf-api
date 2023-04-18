@@ -20,4 +20,11 @@ public class AuthController {
     ) {
         return studentService.login(studentDTO);
     }
+
+    @PostMapping("/updatepassword")
+    public ResponseEntity<?> updatePassword(
+            @Validated @RequestBody StudentDTO studentDTO
+    ) {
+        return studentService.updatePassword(studentDTO);
+    }
 }
