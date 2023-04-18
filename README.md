@@ -29,29 +29,6 @@ POST /login/
 }
 ```
 
-### Update student password
-This endpoint is used to update the student's password.
-
-```http
-PUT /updatepassword/
-```
-
-`Body`
-```json
-{
-  "studentCod": "",
-  "password": ""
-}
-```
-
-
-`Response`
-```json
-{
-  "accessToken": ""
-}
-```
-
 ### Validation by SMS
 This endpoint is used to verify a student's identity via SMS code.
 
@@ -81,8 +58,32 @@ POST /smsvalidation
 }
 ```
 
-### Enrollment Process
-This endpoint is used to start the enrollment process for a student.
+### Update student password
+This endpoint is used to update the student's password.
+
+```http
+PUT /updatepassword/
+```
+
+`Body`
+```json
+{
+  "studentCod": "",
+  "password": ""
+}
+```
+
+
+`Response`
+```json
+{
+  "accessToken": ""
+}
+```
+
+
+### Student information
+This endpoint is used to retrieve the student information
 
 ```http
 POST /
@@ -104,7 +105,6 @@ POST /
   "dni": "",
   "newLevel": "",
   "newGrade": ""
-  
 }
 ```
 
@@ -150,17 +150,28 @@ GET /details
   ]
 }
 ```
-#### Enrollment confirmation
-This endpoint is used to confirm the student's enrollment.
+#### Enrollment process
+This endpoint is used to process the student's enrollment
 
 ```http
-POST /confirmation
+POST /process
 ```
 
 `Header`
 ```json
 {
   "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
+}
+```
+
+`Body`
+```json
+{
+  "studentCod": "",
+  "totalAmount": "",
+  "date": "",
+  "level": {"levelId": "", "levelName": ""},
+  "paymentId": {"paymentId": "", "paymentName": ""},,
 }
 ```
 
