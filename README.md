@@ -36,25 +36,25 @@ This endpoint is used to verify a student's identity via SMS code.
 POST /smsvalidation 
 ```
 
-`Header`
+`Params`
 ```json
 {
-  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
+  "tempToken": "",
+  "studentCod": ""
 }
 ```
 
 `Body`
 ```json
 {
-  "smsCode": ""
+  "sms": ""
 }
 ```
-
 
 `Response`
 ```json
 {
-  "message": ""
+  "accessToken": ""
 }
 ```
 
@@ -63,6 +63,12 @@ This endpoint is used to update the student's password.
 
 ```http
 PUT /updatepassword/
+```
+`Header`
+```json
+{
+  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
+}
 ```
 
 `Body`
@@ -77,10 +83,9 @@ PUT /updatepassword/
 `Response`
 ```json
 {
-  "accessToken": ""
+  "message": ""
 }
 ```
-
 
 ### Student information
 This endpoint is used to retrieve the student information
@@ -171,7 +176,7 @@ POST /process
   "totalAmount": "",
   "date": "",
   "level": {"levelId": "", "levelName": ""},
-  "paymentId": {"paymentId": "", "paymentName": ""},,
+  "paymentId": {"paymentId": "", "paymentName": ""}
 }
 ```
 
