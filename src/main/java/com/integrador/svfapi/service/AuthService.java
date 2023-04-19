@@ -60,7 +60,7 @@ public class AuthService {
             String smsCode = String.valueOf(generateRandomNumber());
             saveSms(studentCode, smsCode);
             // Sms sending
-            String studentPhoneNumber = "+51"+student.getPhone();
+            String studentPhoneNumber = student.getPhone();
             twilioSMS.sendMessage(studentPhoneNumber, smsCode);
             // Toggle this when the frontend is ready
 //            HttpHeaders headers = new HttpHeaders();
