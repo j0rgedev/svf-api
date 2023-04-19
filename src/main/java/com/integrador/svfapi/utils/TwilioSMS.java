@@ -21,9 +21,9 @@ public class TwilioSMS {
     public void sendMessage(String number, String token) {
         Twilio.init(account_sid, auth_token);
         Message message = Message.creator(
-                new PhoneNumber(number),
+                new PhoneNumber("+51"+number),
                 new PhoneNumber(phone_number),
-                "Tu código de verificación es: " + token)
+                "SVF: Tu código de verificación es: " + token)
                 .create();
     }
 }
