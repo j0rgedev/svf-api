@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class StudentDTO {
+public class AuthDTO {
     @NotNull
     @NotBlank
     private String studentCod;
