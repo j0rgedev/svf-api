@@ -1,4 +1,4 @@
-package com.integrador.svfapi.Exception;
+package com.integrador.svfapi.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

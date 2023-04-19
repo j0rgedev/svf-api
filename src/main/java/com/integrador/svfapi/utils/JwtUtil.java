@@ -1,6 +1,6 @@
-package com.integrador.svfapi.Utils;
+package com.integrador.svfapi.utils;
 
-import com.integrador.svfapi.Classes.StudentLogin;
+import com.integrador.svfapi.dto.StudentDTO;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -24,7 +24,7 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public String generateToken(StudentLogin student) {
+    public String generateToken(StudentDTO student) {
         Map<String, Object> claims = new HashMap<>();
         return Jwts.builder()
                 .setClaims(claims)
@@ -40,7 +40,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public boolean validateToken(String token, StudentLogin student) {
+    public boolean validateToken(String token, StudentDTO student) {
         final String username = extractUsername(token);
         return (username.equals(student.getStudentCod()) && !isTokenExpired(token));
     }
