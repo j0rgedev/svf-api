@@ -54,7 +54,7 @@ POST /smsvalidation
 `Response`
 ```json
 {
-  "accessToken": ""
+  "tempToken": ""
 }
 ```
 
@@ -74,8 +74,7 @@ PUT /updatepassword/
 `Body`
 ```json
 {
-  "studentCod": "",
-  "password": ""
+  "newPassword": ""
 }
 ```
 
@@ -83,7 +82,7 @@ PUT /updatepassword/
 `Response`
 ```json
 {
-  "message": ""
+  "accessToken": ""
 }
 ```
 
