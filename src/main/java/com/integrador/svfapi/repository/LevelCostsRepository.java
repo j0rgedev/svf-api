@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface LevelCostsRepository extends JpaRepository<LevelCosts, String> {
+    List<LevelCosts> findByTermsConditionsId(TermsAndConditions termsConditionsId);
 
-    List<LevelCosts> findByTermsAndConditions(TermsAndConditions termsAndConditions);
 }

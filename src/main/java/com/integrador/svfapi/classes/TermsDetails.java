@@ -29,6 +29,6 @@ public class TermsDetails {
     )
     private String termDescription;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "terms_and_conditions_id")
-    private TermsAndConditions termsAndConditionsId;
+    @JoinColumn(name = "terms_conditions_id")
+    private TermsAndConditions termsConditionsId;
 }

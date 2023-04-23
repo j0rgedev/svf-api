@@ -4,6 +4,7 @@ package com.integrador.svfapi.service;
 import com.integrador.svfapi.classes.LevelCosts;
 import com.integrador.svfapi.classes.TermsAndConditions;
 import com.integrador.svfapi.classes.TermsDetails;
+import com.integrador.svfapi.dto.EnrollmentDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.EnrollmentDetailsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.LevelCostsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.TermDetailsDTO;
@@ -46,8 +47,8 @@ public class EnrollmentService {
         String thisYearId = "T" + year;
 
         TermsAndConditions currentTermsAndConditions = termsAndConditionsRepository.getReferenceById(thisYearId);
-        List<TermsDetails> currentTermDetails = termsDetailsRepository.findByTermsAndConditions(currentTermsAndConditions);
-        List<LevelCosts> currentLevelCosts = levelCostsRepository.findByTermsAndConditions(currentTermsAndConditions);
+        List<TermsDetails> currentTermDetails = termsDetailsRepository.findByTermsConditionsId(currentTermsAndConditions);
+        List<LevelCosts> currentLevelCosts = levelCostsRepository.findByTermsConditionsId(currentTermsAndConditions);
         EnrollmentDetailsDTO response = new EnrollmentDetailsDTO();
         response.setSchoolYear(String.valueOf(year));
         response.setMainInfo(currentTermsAndConditions.getGeneralInfo());
@@ -67,10 +68,13 @@ public class EnrollmentService {
         return ResponseEntity.ok().body(response);
     }
 
-    public ResponseEntity<Map<String,String>> enrollmentProcess(String token){
+    public ResponseEntity<Map<String,String>> enrollmentProcess(String token, EnrollmentDTO enrollmentDTO){
 
-        String enrollmentId= "";
-        return ResponseEntity.ok().body(Map.of("enrollmentId", enrollmentId));
+            String studentId = jwtUtil.extractUsername(token);
+            Map<String,String> response = new HashMap<>();
+            response.put("studentId", studentId);
+            response.put("enrollmentDTO", enrollmentDTO.toString());
+            return ResponseEntity.ok().body(response);
+
     }
-
 }

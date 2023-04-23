@@ -5,6 +5,7 @@ import com.integrador.svfapi.service.EnrollmentService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,8 @@ public class EnrollmentController {
             @RequestHeader("Authorization") @NotBlank String token,
             @NotBlank @NotNull @RequestBody() EnrollmentDTO enrollmentDTO
     ){
-        return enrollmentService.enrollmentProcess(token);
+        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return enrollmentService.enrollmentProcess(token, enrollmentDTO);
     }
 }

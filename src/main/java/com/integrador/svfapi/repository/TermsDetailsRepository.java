@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface TermsDetailsRepository extends JpaRepository<TermsDetails,String> {
+    List<TermsDetails> findByTermsConditionsId(TermsAndConditions termsConditionsId);
 
-    List<TermsDetails> findByTermsAndConditions(TermsAndConditions termsAndConditions);
 }

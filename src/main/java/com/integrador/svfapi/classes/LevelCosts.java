@@ -31,6 +31,6 @@ public class LevelCosts {
     )
     private BigDecimal cost;
     @ManyToOne
-    @JoinColumn(name = "terms_and_conditions_id")
-    private TermsAndConditions termsAndConditionsId;
+    @JoinColumn(name = "terms_conditions_id")
+    private TermsAndConditions termsConditionsId;
 }

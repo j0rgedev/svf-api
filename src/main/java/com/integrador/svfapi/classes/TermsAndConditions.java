@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "terms_and_conditions")
+@Entity(name = "terms_conditions")
 public class TermsAndConditions {
 
     @Id
     @Column(
-            name = "terms_and_conditions_id"
+            name = "terms_conditions_id"
     )
-    String termsAndConditionsId;
+    String termsConditionsId;
     @Column(
             name = "year",
             nullable = false,
