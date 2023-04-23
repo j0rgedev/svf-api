@@ -49,4 +49,7 @@ public class AuthController {
         token = token.replace("Bearer ", "");
         return authService.updatePassword(token, authDTO);
     }
+
+
+
 }

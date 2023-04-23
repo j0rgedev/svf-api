@@ -2,6 +2,7 @@ package com.integrador.svfapi.service;
 
 import com.integrador.svfapi.classes.Sms;
 import com.integrador.svfapi.dto.AuthDTO;
+import com.integrador.svfapi.dto.StudentDTO;
 import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.SmsRepository;
 import com.integrador.svfapi.repository.StudentRepository;
@@ -121,6 +122,7 @@ public class AuthService {
         }
     }
 
+
     /*
         Functions for login process
     */
@@ -177,4 +179,7 @@ public class AuthService {
     public void deleteSmsCode(String studentCod){
         smsRepository.deleteById(studentCod);
     }
-}
+
+
+    }
+
