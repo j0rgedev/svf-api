@@ -1,4 +1,4 @@
-package com.integrador.svfapi.dto;
+package com.integrador.svfapi.dto.enrollmentProcessBody;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

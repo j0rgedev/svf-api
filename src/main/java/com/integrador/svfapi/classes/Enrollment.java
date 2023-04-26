@@ -33,13 +33,13 @@ public class Enrollment {
     @Column(
             name = "status",
             nullable = false,
-            columnDefinition = "NUMBER"
+            columnDefinition = "BOOLEAN"
     )
-    int status;
+    boolean status;
     @Column(
-            name = "terms_and_conditions",
+            name = "terms_conditions_id",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    String termsAndConditionsId;
+    String termsConditionsId;
 }

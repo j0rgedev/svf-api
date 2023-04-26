@@ -1,6 +1,6 @@
 package com.integrador.svfapi.controllers;
 
-import com.integrador.svfapi.dto.EnrollmentDTO;
+import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.service.EnrollmentService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/enrollment/students")
+@RequestMapping("/api/v1/enrollment")
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;

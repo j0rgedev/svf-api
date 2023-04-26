@@ -1,10 +1,13 @@
-package com.integrador.svfapi.dto;
+package com.integrador.svfapi.dto.enrollmentProcessBody;
 
 import com.integrador.svfapi.classes.Payments;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Data
 @AllArgsConstructor
@@ -15,10 +18,10 @@ public class EnrollmentDTO {
     String studentCod;
     @NotNull
     @NotBlank
-    String totalAmount;
+    BigDecimal totalAmount;
     @NotNull
     @NotBlank
-    String date;
+    Timestamp date;
     @NotNull
     @NotBlank
     LevelDetailsDTO levelDetailsDTO;
