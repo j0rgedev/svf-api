@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/enrollment/students")
+@RequestMapping("/api/v1/enrollment")
 public class StudentController {
 
     private final StudentService studentService;
@@ -20,7 +20,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @PostMapping("")
+    @PostMapping("/")
     public ResponseEntity<?> studentInformation(
             @RequestHeader("Authorization") @NotBlank String token
     ) {

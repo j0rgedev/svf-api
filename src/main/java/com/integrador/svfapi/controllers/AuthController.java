@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/enrollment/students")
+@RequestMapping("/api/v1/enrollment")
 public class AuthController {
 
     private final AuthService authService;

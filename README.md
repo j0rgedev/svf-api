@@ -11,7 +11,7 @@ API design for SVF Enrollment System
 This endpoint is used to validate the student's login credentials.
 
 ```http
-POST /login/
+POST /login
 ```
 
 `Body`
@@ -171,7 +171,6 @@ POST /process
 `Body`
 ```json
 {
-  "studentCod": "",
   "totalAmount": "",
   "date": "",
   "level": {"levelId": "", "levelName": ""},
