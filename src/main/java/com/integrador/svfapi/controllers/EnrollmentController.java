@@ -1,6 +1,6 @@
 package com.integrador.svfapi.controllers;
 
-import com.integrador.svfapi.dto.EnrollmentDTO;
+import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.service.EnrollmentService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

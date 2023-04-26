@@ -1,21 +1,20 @@
 package com.integrador.svfapi.service;
 
 
-import com.integrador.svfapi.classes.LevelCosts;
-import com.integrador.svfapi.classes.TermsAndConditions;
-import com.integrador.svfapi.classes.TermsDetails;
-import com.integrador.svfapi.dto.EnrollmentDTO;
+import com.integrador.svfapi.classes.*;
+import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.EnrollmentDetailsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.LevelCostsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.TermDetailsDTO;
-import com.integrador.svfapi.repository.LevelCostsRepository;
-import com.integrador.svfapi.repository.TermsAndConditionsRepository;
-import com.integrador.svfapi.repository.TermsDetailsRepository;
+import com.integrador.svfapi.exception.BusinessException;
+import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -23,6 +22,8 @@ import java.util.*;
 public class EnrollmentService {
 
     private final JwtUtil jwtUtil;
+    private final EnrollmentRepository enrollmentRepository;
+    private final EnrollmentDetailsRepository enrollmentDetailsRepository;
     private final TermsAndConditionsRepository termsAndConditionsRepository;
     private final TermsDetailsRepository termsDetailsRepository;
     private final LevelCostsRepository levelCostsRepository;
@@ -30,11 +31,13 @@ public class EnrollmentService {
     @Autowired
     public EnrollmentService(
             JwtUtil jwtUtil,
-            TermsAndConditionsRepository termsAndConditionsRepository,
+            EnrollmentRepository enrollmentRepository, EnrollmentDetailsRepository enrollmentDetailsRepository, TermsAndConditionsRepository termsAndConditionsRepository,
             TermsDetailsRepository termsDetailsRepository,
             LevelCostsRepository levelCostsRepository
     ) {
         this.jwtUtil = jwtUtil;
+        this.enrollmentRepository = enrollmentRepository;
+        this.enrollmentDetailsRepository = enrollmentDetailsRepository;
         this.termsAndConditionsRepository = termsAndConditionsRepository;
         this.termsDetailsRepository = termsDetailsRepository;
         this.levelCostsRepository = levelCostsRepository;
@@ -70,11 +73,46 @@ public class EnrollmentService {
 
     public ResponseEntity<Map<String,String>> enrollmentProcess(String token, EnrollmentDTO enrollmentDTO){
 
-            String studentId = jwtUtil.extractUsername(token);
-            Map<String,String> response = new HashMap<>();
-            response.put("studentId", studentId);
-            response.put("enrollmentDTO", enrollmentDTO.toString());
-            return ResponseEntity.ok().body(response);
+        String studentCod = jwtUtil.extractUsername(token);
+        String newEnrollmentId = "";
+        LocalDate today = LocalDate.now();
+        int year = today.getYear();
+        String thisYearId = "T" + year;
+
+        Enrollment foundEnrollment = enrollmentRepository.findByStudentCodAndTermsConditionsId(studentCod, thisYearId);
+        if (foundEnrollment != null) {
+
+            newEnrollmentId = foundEnrollment.getEnrollmentId();
+        } else {
+
+            String lastEnrollmentId = enrollmentRepository.findTopByOrderByEnrollmentIdDesc().getEnrollmentId();
+            newEnrollmentId = createEnrollmentId(lastEnrollmentId);
+
+            Enrollment enrollment = new Enrollment();
+            enrollment.setEnrollmentId(newEnrollmentId);
+            enrollment.setStudentCod(studentCod);
+            enrollment.setPaymentId(enrollmentDTO.getPayments().getPaymentId());
+            enrollment.setStatus(true);
+            enrollment.setTermsConditionsId(thisYearId);
+
+            EnrollmentDetails enrollmentDetails = new EnrollmentDetails();
+            enrollmentDetails.setEnrollmentId(newEnrollmentId);
+            enrollmentDetails.setDate(enrollmentDTO.getDate());
+            enrollmentDetails.setTotalAmount(enrollmentDTO.getTotalAmount());
+
+            enrollmentRepository.saveAndFlush(enrollment);
+            enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
+        }
+        return ResponseEntity.ok().body(Map.of("enrollmentId", newEnrollmentId));
 
     }
+
+    private String createEnrollmentId(String id){
+        DecimalFormat df = new DecimalFormat("E00000");
+        int number = Integer.parseInt(id.substring(1,6));
+        number++;
+
+        return df.format(number);
+    }
+
 }
