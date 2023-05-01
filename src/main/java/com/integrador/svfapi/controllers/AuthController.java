@@ -1,7 +1,6 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.AuthDTO;
-import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.service.AuthService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
