@@ -11,10 +11,14 @@ import com.integrador.svfapi.utils.PasswordEncryption;
 import com.integrador.svfapi.utils.JwtUtil;
 import com.integrador.svfapi.utils.TwilioSMS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
@@ -46,29 +50,20 @@ public class AuthService {
         this.aesEncryption = aesEncryption;
     }
 
-
     //This method is to log in the user
     public ResponseEntity<Map<String, String>> login(AuthDTO authDTO) {
         String studentCode = authDTO.getStudentCod();
-        Student student = studentRepository.getReferenceById(studentCode);
         boolean isDefaultPassword = checkPasswordDefaultFormat(studentCode);
 
         if (isDefaultPassword) {
             String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
-            String redirectUrl =
-                    "http://localhost:8080/sms-validation?tempToken=" + token + "&studentCod=" + studentCode;
-            String smsCode = String.valueOf(generateRandomNumber());
-            saveSms(studentCode, smsCode);
-            // Sms sending
-            String studentPhoneNumber = student.getPhone();
-            twilioSMS.sendMessage(studentPhoneNumber, smsCode);
-            // Toggle this when the frontend is ready
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setLocation(URI.create(redirectUrl));
-//            return ResponseEntity.status(HttpStatus.SEE_OTHER).headers(headers).build();
-            // Sms code generation
+            String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
+//            String smsCode = String.valueOf(generateRandomNumber());
+//            saveSms(studentCode, smsCode);
+//            // Sms sending
+//            String studentPhoneNumber = student.getPhone();
+//            twilioSMS.sendMessage(studentPhoneNumber, smsCode);
             return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
-
         } else if (checkCredentials(authDTO)) {
             String token = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
             if (token == null) {
@@ -83,7 +78,8 @@ public class AuthService {
 
     // This method is called when the user has already logged in and has a default password and
     // wants to change it
-    public ResponseEntity<Map<String,String>> validateSms(String accessToken, String studentCod, String sms){
+    public ResponseEntity<Map<String,String>> validateSms(String accessToken, String sms){
+        String studentCod = jwtUtil.extractUsername(accessToken);
         if(jwtUtil.validateToken(accessToken, studentCod)) {
             String smsCode = getSmsCode(studentCod);
             if (smsCode.equals(sms)) {

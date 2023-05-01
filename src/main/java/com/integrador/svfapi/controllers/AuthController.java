@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -33,11 +32,12 @@ public class AuthController {
 
     @PostMapping("/smsvalidation")
     public ResponseEntity<?> validateSms(
-            @RequestParam("tempToken") @NotBlank String tempToken,
-            @RequestParam("studentCod") @NotBlank String studentCod,
+            @RequestHeader("Authorization") @NotBlank String tempToken,
             @NotBlank @NotNull @RequestBody() Map<String,String> sms
     ){
-        return authService.validateSms(tempToken, studentCod, sms.get("sms"));
+        if(!tempToken.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        tempToken = tempToken.replace("Bearer ", "");
+        return authService.validateSms(tempToken, sms.get("sms"));
     }
 
     @PutMapping("/updatepassword")
