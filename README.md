@@ -5,13 +5,13 @@ API design for SVF Enrollment System
 ## API Reference
 
 ## Base URL
-/api/v1/student/enrollment/
+/api/v1/student/enrollment
 
 ### Login validation
 This endpoint is used to validate the student's login credentials.
 
 ```http
-POST /login/
+POST /login
 ```
 
 `Body`
@@ -39,8 +39,7 @@ POST /smsvalidation
 `Params`
 ```json
 {
-  "tempToken": "",
-  "studentCod": ""
+  "tempToken": ""
 }
 ```
 
@@ -54,7 +53,7 @@ POST /smsvalidation
 `Response`
 ```json
 {
-  "accessToken": ""
+  "tempToken": ""
 }
 ```
 
@@ -74,7 +73,6 @@ PUT /updatepassword/
 `Body`
 ```json
 {
-  "studentCod": "",
   "password": ""
 }
 ```
@@ -83,7 +81,7 @@ PUT /updatepassword/
 `Response`
 ```json
 {
-  "message": ""
+  "accessToken": ""
 }
 ```
 
@@ -100,7 +98,6 @@ POST /
 }
 ```
 
-
 `Response`
 ```json
 {
@@ -112,6 +109,15 @@ POST /
   "newGrade": ""
 }
 ```
+
+`Response`
+```json
+{
+  "studentCod": "",
+  "names": "",
+  "lastNames": "",
+  "enrollmentId": ""
+}
 
 ### Enrollment details
 This endpoint is used to retrieve the enrollment details.
@@ -125,7 +131,7 @@ GET /details
 {
   "schoolYear": "",
   "mainInfo": "",
-  "terms": [
+  "termDetails": [
       {
           "title": "",
           "body": ""
@@ -139,17 +145,17 @@ GET /details
           "body": ""
       }
   ],
-  "amounts": [
+  "levelCosts": [
       {
-          "level": "",
+          "name": "",
           "cost": ""
       },
       {
-          "level": "",
+          "name": "",
           "cost": ""
       },
       {
-          "level": "",
+          "name": "",
           "cost": ""
       }
   ]
@@ -172,11 +178,10 @@ POST /process
 `Body`
 ```json
 {
-  "studentCod": "",
   "totalAmount": "",
   "date": "",
   "level": {"levelId": "", "levelName": ""},
-  "paymentId": {"paymentId": "", "paymentName": ""}
+  "paymentMethod": {"paymentId": "", "paymentType": ""}
 }
 ```
 

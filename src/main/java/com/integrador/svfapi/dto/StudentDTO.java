@@ -8,10 +8,23 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class StudentDTO {
+
     @NotNull
     @NotBlank
-    private String studentCod;
+    private String student_cod;
     @NotNull
     @NotBlank
-    private String password;
+    private String names;
+    @NotNull
+    @NotBlank
+    private String lastnames;
+    @NotNull
+    @NotBlank
+    private String dni;
+    @NotNull
+    @NotBlank
+    private String currentLevel;
+    @NotNull
+    @NotBlank
+    private char currentGrade;
 }

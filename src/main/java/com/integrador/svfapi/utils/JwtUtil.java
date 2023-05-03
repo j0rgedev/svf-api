@@ -1,6 +1,5 @@
 package com.integrador.svfapi.utils;
 
-import com.integrador.svfapi.dto.StudentDTO;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -21,16 +20,14 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
 
-    public String generateToken(StudentDTO student) {
+    public String generateToken(String studentCod, long tokenDuration) {
         Map<String, Object> claims = new HashMap<>();
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(student.getStudentCod())
+                .setSubject(studentCod)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration * 1000)) // 24 horas
+                .setExpiration(new Date(System.currentTimeMillis() + tokenDuration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -40,13 +37,13 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public boolean validateToken(String token, StudentDTO student) {
+    public boolean validateToken(String token, String studentCod) {
         final String username = extractUsername(token);
-        return (username.equals(student.getStudentCod()) && !isTokenExpired(token));
+        return (username.equals(studentCod) && !isTokenExpired(token));
     }
 
     public String extractUsername(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody().getSubject();
     }
 
     public boolean isTokenExpired(String token) {
@@ -54,8 +51,8 @@ public class JwtUtil {
         return expiration.before(new Date());
     }
 
-    public Date extractExpiration(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration();
+    private Date extractExpiration(String token) {
+        return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody().getExpiration();
     }
 }
 
