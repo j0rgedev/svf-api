@@ -29,6 +29,13 @@ POST /login
 }
 ```
 
+`Response (default password)`
+```json
+{
+  "redirectUrl": ""
+}
+```
+
 ### Validation by SMS
 This endpoint is used to verify a student's identity via SMS code.
 
