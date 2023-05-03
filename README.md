@@ -98,7 +98,7 @@ POST /
 }
 ```
 
-`Response`
+`Response (not enrolled student)`
 ```json
 {
   "studentCod": "",
@@ -108,9 +108,10 @@ POST /
   "newLevel": "",
   "newGrade": ""
 }
-```
 
-`Response`
+
+
+`Response (enrolled student)`
 ```json
 {
   "studentCod": "",
@@ -118,6 +119,7 @@ POST /
   "lastNames": "",
   "enrollmentId": ""
 }
+```
 
 ### Enrollment details
 This endpoint is used to retrieve the enrollment details.
