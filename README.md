@@ -108,7 +108,7 @@ POST /
   "newLevel": "",
   "newGrade": ""
 }
-
+```
 
 
 `Response (enrolled student)`
