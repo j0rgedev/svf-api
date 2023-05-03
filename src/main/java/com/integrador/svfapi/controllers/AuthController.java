@@ -42,13 +42,11 @@ public class AuthController {
     @PutMapping("/updatepassword")
     public ResponseEntity<?> updatePassword(
             @RequestHeader("Authorization") @NotBlank String token,
-            @NotBlank @NotNull @RequestBody() AuthDTO authDTO
+            @NotBlank @NotNull @RequestBody() Map<String,String> password
     ) {
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return authService.updatePassword(token, authDTO);
+        return authService.updatePassword(token, password.get("password"));
     }
-
-
-
+    
 }

@@ -20,7 +20,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @PostMapping("")
+    @PostMapping("/")
     public ResponseEntity<?> studentInformation(
             @RequestHeader("Authorization") @NotBlank String token
     ) {

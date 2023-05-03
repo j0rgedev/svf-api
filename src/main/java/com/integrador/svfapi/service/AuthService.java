@@ -53,16 +53,17 @@ public class AuthService {
     //This method is to log in the user
     public ResponseEntity<Map<String, String>> login(AuthDTO authDTO) {
         String studentCode = authDTO.getStudentCod();
+        Student student = studentRepository.getReferenceById(studentCode);
         boolean isDefaultPassword = checkPasswordDefaultFormat(studentCode);
 
         if (isDefaultPassword) {
             String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
+            String smsCode = String.valueOf(generateRandomNumber());
             String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
-//            String smsCode = String.valueOf(generateRandomNumber());
-//            saveSms(studentCode, smsCode);
-//            // Sms sending
-//            String studentPhoneNumber = student.getPhone();
-//            twilioSMS.sendMessage(studentPhoneNumber, smsCode);
+            saveSms(studentCode, smsCode);
+            //Sms sending
+            String studentPhoneNumber = student.getPhone();
+            twilioSMS.sendMessage(studentPhoneNumber, smsCode);
             return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
         } else if (checkCredentials(authDTO)) {
             String token = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
@@ -98,12 +99,12 @@ public class AuthService {
     }
 
     // This method is to update the default password after sms validation
-    public ResponseEntity<Map<String, String>> updatePassword(String token, AuthDTO authDTO) {
-        String studentCod = authDTO.getStudentCod();
+    public ResponseEntity<Map<String, String>> updatePassword(String token, String password) {
+        String studentCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, studentCod)) {
             Student student = studentRepository.getReferenceById(studentCod);
             String salt = student.getSalt();
-            String hashedPassword = passwordEncryption.generateSecurePassword(authDTO.getPassword(), salt);
+            String hashedPassword = passwordEncryption.generateSecurePassword(password, salt);
             student.setPassword(hashedPassword);
             student.setSalt(salt);
             studentRepository.save(student);
@@ -133,9 +134,9 @@ public class AuthService {
 
         if (!passwordEncryption.verifyUserPassword(providedPassword, studentPassword, studentSalt)) {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
+        } else {
+            return true;
         }
-
-        return true;
     }
 
     private boolean checkPasswordDefaultFormat(String studentCod) {

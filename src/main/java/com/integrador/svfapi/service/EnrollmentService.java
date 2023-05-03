@@ -81,17 +81,15 @@ public class EnrollmentService {
 
         Enrollment foundEnrollment = enrollmentRepository.findByStudentCodAndTermsConditionsId(studentCod, thisYearId);
         if (foundEnrollment != null) {
-
             newEnrollmentId = foundEnrollment.getEnrollmentId();
         } else {
-
             String lastEnrollmentId = enrollmentRepository.findTopByOrderByEnrollmentIdDesc().getEnrollmentId();
             newEnrollmentId = createEnrollmentId(lastEnrollmentId);
 
             Enrollment enrollment = new Enrollment();
             enrollment.setEnrollmentId(newEnrollmentId);
             enrollment.setStudentCod(studentCod);
-            enrollment.setPaymentId(enrollmentDTO.getPayments().getPaymentId());
+            enrollment.setPaymentId(enrollmentDTO.getPaymentMethod().getPaymentId());
             enrollment.setStatus(true);
             enrollment.setTermsConditionsId(thisYearId);
 

@@ -12,10 +12,6 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 public class EnrollmentDTO {
-
-    @NotNull
-    @NotBlank
-    String studentCod;
     @NotNull
     @NotBlank
     BigDecimal totalAmount;
@@ -24,9 +20,8 @@ public class EnrollmentDTO {
     Timestamp date;
     @NotNull
     @NotBlank
-    LevelDetailsDTO levelDetailsDTO;
+    LevelDetailsDTO level;
     @NotNull
     @NotBlank
-    Payments payments;
-
+    Payments paymentMethod;
 }
