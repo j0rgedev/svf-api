@@ -56,21 +56,23 @@ public class AuthService {
         Student student = studentRepository.getReferenceById(studentCode);
         boolean isDefaultPassword = checkPasswordDefaultFormat(studentCode);
 
-        if (isDefaultPassword) {
-            String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
-            String smsCode = String.valueOf(generateRandomNumber());
-            String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
-            saveSms(studentCode, smsCode);
-            //Sms sending
-            String studentPhoneNumber = student.getPhone();
-            twilioSMS.sendMessage(studentPhoneNumber, smsCode);
-            return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
-        } else if (checkCredentials(authDTO)) {
-            String token = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
-            if (token == null) {
-                throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
+        if (checkCredentials(authDTO)) {
+            if (isDefaultPassword) {
+                String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
+                String smsCode = String.valueOf(generateRandomNumber());
+                String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
+                saveSms(studentCode, smsCode);
+                //Sms sending
+                String studentPhoneNumber = student.getPhone();
+                twilioSMS.sendMessage(studentPhoneNumber, smsCode);
+                return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
+            } else {
+                String token = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
+                if (token == null) {
+                    throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
+                }
+                return ResponseEntity.ok().body(Map.of("accessToken", token));
             }
-            return ResponseEntity.ok().body(Map.of("accessToken", token));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
         }
