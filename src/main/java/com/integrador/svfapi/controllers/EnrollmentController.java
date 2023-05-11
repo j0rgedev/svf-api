@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,7 +29,7 @@ public class EnrollmentController {
     @PostMapping("/process")
     public ResponseEntity<?> enrollmentProcess(
             @RequestHeader("Authorization") @NotBlank String token,
-            @NotBlank @NotNull @RequestBody() EnrollmentDTO enrollmentDTO
+            @Validated @RequestBody() EnrollmentDTO enrollmentDTO
     ){
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
