@@ -3,7 +3,7 @@ package com.integrador.svfapi.service;
 import com.integrador.svfapi.classes.Enrollment;
 import com.integrador.svfapi.classes.Student;
 import com.integrador.svfapi.dto.StudentDTO;
-import com.integrador.svfapi.dto.StudentWithEnrollmentDTO;
+import com.integrador.svfapi.dto.EnrolledStudentDTO;
 import com.integrador.svfapi.repository.EnrollmentRepository;
 import com.integrador.svfapi.repository.StudentRepository;
 import com.integrador.svfapi.utils.JwtUtil;
@@ -38,17 +38,17 @@ public class StudentService {
         Optional <Enrollment> result = Optional.ofNullable(enrollmentRepository.findByStudentCod(studentCod));
         if (result.isPresent()) {
             Enrollment foundEnrollment = result.get();
-            StudentWithEnrollmentDTO studentWithEnrollmentDTO = new StudentWithEnrollmentDTO(
+            EnrolledStudentDTO enrolledStudentDTO = new EnrolledStudentDTO(
                     studentCod,
                     student.getNames(),
                     student.getLastName(),
                     foundEnrollment.getEnrollmentId());
 
             return ResponseEntity.ok().body(Map.of(
-                    "student_cod", studentWithEnrollmentDTO.getStudentCod(),
-                    "names", studentWithEnrollmentDTO.getNames(),
-                    "lastNames", studentWithEnrollmentDTO.getLastNames(),
-                    "enrollmentId", studentWithEnrollmentDTO.getEnrollmentID()));
+                    "student_cod", enrolledStudentDTO.getStudentCod(),
+                    "names", enrolledStudentDTO.getNames(),
+                    "lastNames", enrolledStudentDTO.getLastNames(),
+                    "enrollmentId", enrolledStudentDTO.getEnrollmentID()));
 
         } else {
             String[] newLevelAndGrade;
