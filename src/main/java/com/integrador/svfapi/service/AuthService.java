@@ -105,9 +105,10 @@ public class AuthService {
         String studentCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, studentCod)) {
             Student student = studentRepository.getReferenceById(studentCod);
-            String salt = student.getSalt();
+            String salt = passwordEncryption.getSaltvalue(30);
             String hashedPassword = passwordEncryption.generateSecurePassword(password, salt);
             student.setPassword(hashedPassword);
+            student.setSalt(salt);
             studentRepository.save(student);
             String newAccessToken = jwtUtil.generateToken(studentCod, 24 * 60 * 60 * 1000); // 24 hours
             if (newAccessToken == null) {
