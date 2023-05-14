@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class StudentWithOutEnrollmentDTO {
+public class NotEnrolledStudent {
 
     @NotNull
     @NotBlank

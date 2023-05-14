@@ -1,12 +1,11 @@
 package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.Enrollment;
-import com.integrador.svfapi.classes.Representatives;
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Student;
+import com.integrador.svfapi.dto.getAllStudents.StudentListDTO;
 import com.integrador.svfapi.dto.studentInformation.EnrolledStudentDTO;
-import com.integrador.svfapi.dto.studentInformation.StudentWithOutEnrollmentDTO;
-import com.integrador.svfapi.dto.getAllStudents.StudentDTO;
+import com.integrador.svfapi.dto.studentInformation.NotEnrolledStudent;
 import com.integrador.svfapi.repository.EnrollmentRepository;
 import com.integrador.svfapi.repository.StudentRepository;
 import com.integrador.svfapi.service.StudentService;
@@ -56,7 +55,7 @@ public class StudentServiceIMPL implements StudentService {
             newLevelAndGrade = calculateNewLevelAndGrade(student.getCurrentGrade(), student.getCurrentLevel());
             student.setCurrentLevel(newLevelAndGrade[1]);
             student.setCurrentGrade(newLevelAndGrade[0].charAt(0));
-            StudentWithOutEnrollmentDTO studentWithOutEnrollmentDTO = new StudentWithOutEnrollmentDTO(
+            NotEnrolledStudent notEnrolledStudent = new NotEnrolledStudent(
                     studentCod,
                     student.getNames(),
                     student.getLastName(),
@@ -64,7 +63,7 @@ public class StudentServiceIMPL implements StudentService {
                     student.getCurrentLevel(),
                     student.getCurrentGrade());
 
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(), studentWithOutEnrollmentDTO));
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(), notEnrolledStudent));
 
         }
     }
@@ -73,14 +72,14 @@ public class StudentServiceIMPL implements StudentService {
     public ResponseEntity<ResponseFormat> getAllStudents() {
 
         List<Student> allStudents = studentRepository.findAll();
-        List<StudentDTO> allStudentsDTO = new ArrayList<>();
+        List<StudentListDTO> allStudentsDTO = new ArrayList<>();
 
         for (Student student: allStudents) {
             Optional<Enrollment> result = Optional.ofNullable(enrollmentRepository.findByStudentCod(student.getStudentCod()));
             boolean isEnrolled;
             isEnrolled = result.isPresent();
 
-            StudentDTO studentDTO = new StudentDTO(
+            StudentListDTO studentDTO = new StudentListDTO(
                     student.getStudentCod(),
                     student.getNames() + " " + student.getLastName(),
                     student.getBirthday(), isEnrolled);
@@ -96,26 +95,6 @@ public class StudentServiceIMPL implements StudentService {
         Student student = studentRepository.findByStudentCod(studentCod);
 
         return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), student));
-    }
-
-    @Override
-    public ResponseEntity<ResponseFormat> searchStudent(String query) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<ResponseFormat> addStudent(Student student, Representatives representatives) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<ResponseFormat> updateStudent(String studentCod) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<ResponseFormat> deleteStudent(String studentCod) {
-        return null;
     }
 
     /*
