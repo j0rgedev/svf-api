@@ -1,25 +1,24 @@
 package com.integrador.svfapi.service;
 
-
 import com.integrador.svfapi.classes.*;
-import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.EnrollmentDetailsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.LevelCostsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.TermDetailsDTO;
-import com.integrador.svfapi.exception.BusinessException;
+import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.repository.*;
+import com.integrador.svfapi.service.interfaces.EnrollmentService;
 import com.integrador.svfapi.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-@Service
-public class EnrollmentService {
+public class EnrollmentServiceIMPL implements EnrollmentService {
 
     private final JwtUtil jwtUtil;
     private final EnrollmentRepository enrollmentRepository;
@@ -29,9 +28,11 @@ public class EnrollmentService {
     private final LevelCostsRepository levelCostsRepository;
 
     @Autowired
-    public EnrollmentService(
+    public EnrollmentServiceIMPL(
             JwtUtil jwtUtil,
-            EnrollmentRepository enrollmentRepository, EnrollmentDetailsRepository enrollmentDetailsRepository, TermsAndConditionsRepository termsAndConditionsRepository,
+            EnrollmentRepository enrollmentRepository,
+            EnrollmentDetailsRepository enrollmentDetailsRepository,
+            TermsAndConditionsRepository termsAndConditionsRepository,
             TermsDetailsRepository termsDetailsRepository,
             LevelCostsRepository levelCostsRepository
     ) {
@@ -43,8 +44,8 @@ public class EnrollmentService {
         this.levelCostsRepository = levelCostsRepository;
     }
 
-    public ResponseEntity<EnrollmentDetailsDTO> enrollmentDetails (){
-
+    @Override
+    public ResponseEntity<ResponseFormat> enrollmentDetails() {
         LocalDate today = LocalDate.now();
         int year = today.getYear();
         String thisYearId = "T" + year;
@@ -68,13 +69,13 @@ public class EnrollmentService {
         }
         response.setLevelCosts(amountsDTO);
 
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), response));
     }
 
-    public ResponseEntity<Map<String,String>> enrollmentProcess(String token, EnrollmentDTO enrollmentDTO){
-
+    @Override
+    public ResponseEntity<ResponseFormat> enrollmentProcess(String token, EnrollmentDTO enrollmentDTO) {
         String studentCod = jwtUtil.extractUsername(token);
-        String newEnrollmentId = "";
+        String newEnrollmentId;
         LocalDate today = LocalDate.now();
         int year = today.getYear();
         String thisYearId = "T" + year;
@@ -101,8 +102,7 @@ public class EnrollmentService {
             enrollmentRepository.saveAndFlush(enrollment);
             enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
         }
-        return ResponseEntity.ok().body(Map.of("enrollmentId", newEnrollmentId));
-
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), newEnrollmentId));
     }
 
     private String createEnrollmentId(String id){

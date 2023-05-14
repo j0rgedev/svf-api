@@ -1,4 +1,4 @@
-package com.integrador.svfapi.dto;
+package com.integrador.svfapi.dto.studentInformation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

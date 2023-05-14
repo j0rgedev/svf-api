@@ -1,7 +1,6 @@
 package com.integrador.svfapi.controllers;
 
-import com.integrador.svfapi.service.StudentService;
-import com.integrador.svfapi.service.StudentServiceImpl;
+import com.integrador.svfapi.service.StudentServiceIMPL;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,11 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/enrollment")
 public class StudentController {
 
-    private final StudentService studentService;
-    private final StudentServiceImpl studentServiceImpl;
+    private final StudentServiceIMPL studentServiceImpl;
     @Autowired
-    public StudentController(StudentService studentService, StudentServiceImpl studentServiceImpl) {
-        this.studentService = studentService;
+    public StudentController(StudentServiceIMPL studentServiceImpl) {
         this.studentServiceImpl = studentServiceImpl;
     }
 
@@ -26,7 +23,7 @@ public class StudentController {
     ) {
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentService.studentInformation(token);
+        return studentServiceImpl.studentInformation(token);
     }
 
     @PostMapping("/allStudentsInformation")

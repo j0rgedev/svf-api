@@ -1,7 +1,7 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.AuthDTO;
-import com.integrador.svfapi.service.AuthService;
+import com.integrador.svfapi.service.AuthServiceIMPL;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +16,17 @@ import java.util.Map;
 @RequestMapping("/api/v1/enrollment")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthServiceIMPL authServiceIMPL;
     @Autowired
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthServiceIMPL authServiceIMPL) {
+        this.authServiceIMPL = authServiceIMPL;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @Validated @RequestBody AuthDTO authDTO
     ) {
-        return authService.login(authDTO);
+        return authServiceIMPL.login(authDTO);
     }
 
     @PostMapping("/smsvalidation")
@@ -36,7 +36,7 @@ public class AuthController {
     ){
         if(!tempToken.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         tempToken = tempToken.replace("Bearer ", "");
-        return authService.validateSms(tempToken, sms.get("sms"));
+        return authServiceIMPL.validateSMS(tempToken, sms.get("sms"));
     }
 
     @PutMapping("/updatepassword")
@@ -46,7 +46,7 @@ public class AuthController {
     ) {
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return authService.updatePassword(token, password.get("password"));
+        return authServiceIMPL.updatePassword(token, password.get("password"));
     }
     
 }

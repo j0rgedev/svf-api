@@ -1,30 +1,28 @@
 package com.integrador.svfapi.service;
 
+import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Sms;
+import com.integrador.svfapi.classes.Student;
 import com.integrador.svfapi.dto.AuthDTO;
 import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.SmsRepository;
 import com.integrador.svfapi.repository.StudentRepository;
-import com.integrador.svfapi.classes.Student;
+import com.integrador.svfapi.service.interfaces.AuthService;
 import com.integrador.svfapi.utils.AESEncryption;
-import com.integrador.svfapi.utils.PasswordEncryption;
 import com.integrador.svfapi.utils.JwtUtil;
+import com.integrador.svfapi.utils.PasswordEncryption;
 import com.integrador.svfapi.utils.TwilioSMS;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Random;
 
 @Service
-public class AuthService {
+public class AuthServiceIMPL implements AuthService {
 
     private final JwtUtil jwtUtil;
     private final TwilioSMS twilioSMS;
@@ -34,7 +32,7 @@ public class AuthService {
     private final AESEncryption aesEncryption;
 
     @Autowired
-    public AuthService(
+    public AuthServiceIMPL(
             JwtUtil jwtUtil,
             TwilioSMS twilioSMS,
             StudentRepository studentRepository,
@@ -50,8 +48,8 @@ public class AuthService {
         this.aesEncryption = aesEncryption;
     }
 
-    //This method is to log in the user
-    public ResponseEntity<Map<String, String>> login(AuthDTO authDTO) {
+    @Override
+    public ResponseEntity<ResponseFormat> login(AuthDTO authDTO) {
         String studentCode = authDTO.getStudentCod();
         Student student = studentRepository.getReferenceById(studentCode);
         boolean isDefaultPassword = checkPasswordDefaultFormat(studentCode);
@@ -65,33 +63,31 @@ public class AuthService {
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
                 twilioSMS.sendMessage(studentPhoneNumber, smsCode);
-                return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), redirectUrl));
             } else {
-                String token = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
-                if (token == null) {
+                String accessToken = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
+                if (accessToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                return ResponseEntity.ok().body(Map.of("accessToken", token));
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), accessToken));
             }
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
         }
     }
 
-
-    // This method is called when the user has already logged in and has a default password and
-    // wants to change it
-    public ResponseEntity<Map<String,String>> validateSms(String accessToken, String sms){
+    @Override
+    public ResponseEntity<ResponseFormat> validateSMS(String accessToken, String sms) {
         String studentCod = jwtUtil.extractUsername(accessToken);
         if(jwtUtil.validateToken(accessToken, studentCod)) {
             String smsCode = getSmsCode(studentCod);
             if (smsCode.equals(sms)) {
                 deleteSmsCode(studentCod);
-                String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
-                if (token == null) {
+                String tempToken = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
+                if (tempToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                return ResponseEntity.ok().body(Map.of("tempToken", token));
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), tempToken));
             } else {
                 throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid sms code");
             }
@@ -100,8 +96,8 @@ public class AuthService {
         }
     }
 
-    // This method is to update the default password after sms validation
-    public ResponseEntity<Map<String, String>> updatePassword(String token, String password) {
+    @Override
+    public ResponseEntity<ResponseFormat> updatePassword(String token, String password) {
         String studentCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, studentCod)) {
             Student student = studentRepository.getReferenceById(studentCod);
@@ -113,12 +109,11 @@ public class AuthService {
             if (newAccessToken == null) {
                 throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
             }
-            return ResponseEntity.ok().body(Map.of("accessToken", newAccessToken));
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), newAccessToken));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
     }
-
 
     /*
         Functions for login process
@@ -126,7 +121,6 @@ public class AuthService {
     private int generateRandomNumber() {
         return new Random().nextInt(90000)+10000; // 5 digits
     }
-
     private boolean checkCredentials(AuthDTO authDTO) {
         Student student = studentRepository.getReferenceById(authDTO.getStudentCod());
         String studentPassword = student.getPassword();
@@ -177,6 +171,4 @@ public class AuthService {
         smsRepository.deleteById(studentCod);
     }
 
-
-    }
-
+}
