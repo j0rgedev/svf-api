@@ -23,8 +23,8 @@ public class StudentWithOutEnrollmentDTO {
     private String dni;
     @NotNull
     @NotBlank
-    private String currentLevel;
+    private String newLevel;
     @NotNull
     @NotBlank
-    private char currentGrade;
+    private char newGrade;
 }

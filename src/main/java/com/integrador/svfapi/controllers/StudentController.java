@@ -1,6 +1,6 @@
 package com.integrador.svfapi.controllers;
 
-import com.integrador.svfapi.service.impl.StudentServiceIMPL;
+import com.integrador.svfapi.service.StudentServiceImpl;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,16 +11,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/enrollment")
 public class StudentController {
 
-    private final StudentServiceIMPL studentServiceImpl;
+    private final StudentServiceImpl studentServiceImpl;
     @Autowired
-    public StudentController(StudentServiceIMPL studentServiceImpl) {
+    public StudentController(StudentServiceImpl studentServiceImpl) {
         this.studentServiceImpl = studentServiceImpl;
     }
 
-    @PostMapping("/")
+    /*
+    * ENROLLMENT PROCESS ENDPOINTS
+    * */
+    @PostMapping("/") // Endpoint for student information
     public ResponseEntity<?> studentInformation(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
+        // Check if the token is valid
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.studentInformation(token);
