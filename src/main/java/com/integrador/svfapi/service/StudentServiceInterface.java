@@ -8,4 +8,6 @@ import java.util.Map;
 public interface StudentServiceInterface {
     ResponseEntity<ResponseFormat> getAllStudents();
     ResponseEntity<ResponseFormat> getStudentById(String studentCod);
+    ResponseEntity<ResponseFormat> studentInformation(String token);
+    String[] calculateNewLevelAndGrade(char currentGrade, String currentLevel);
 }
