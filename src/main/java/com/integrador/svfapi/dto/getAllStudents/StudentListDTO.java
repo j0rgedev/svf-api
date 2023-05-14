@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class StudentDTO {
+public class StudentListDTO {
 
     @NotNull
     @NotBlank
