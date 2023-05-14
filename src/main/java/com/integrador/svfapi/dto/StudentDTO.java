@@ -11,7 +11,7 @@ public class StudentDTO {
 
     @NotNull
     @NotBlank
-    private String student_cod;
+    private String studentCod;
     @NotNull
     @NotBlank
     private String names;
@@ -23,8 +23,8 @@ public class StudentDTO {
     private String dni;
     @NotNull
     @NotBlank
-    private String currentLevel;
+    private String newLevel;
     @NotNull
     @NotBlank
-    private char currentGrade;
+    private char newGrade;
 }

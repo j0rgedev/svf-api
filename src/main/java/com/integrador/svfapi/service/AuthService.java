@@ -60,7 +60,7 @@ public class AuthService {
             if (isDefaultPassword) {
                 String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
                 String smsCode = String.valueOf(generateRandomNumber());
-                String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
+                String redirectUrl = "/matricula/validacion/?tempToken=" + token;
                 saveSms(studentCode, smsCode);
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
@@ -89,14 +89,14 @@ public class AuthService {
                 deleteSmsCode(studentCod);
                 String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
                 if (token == null) {
-                    throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
+                    throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generando token");
                 }
                 return ResponseEntity.ok().body(Map.of("tempToken", token));
             } else {
-                throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid sms code");
+                throw new BusinessException(HttpStatus.UNAUTHORIZED, "Código SMS inválido");
             }
         } else {
-            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Token inválido");
         }
     }
 
@@ -112,11 +112,11 @@ public class AuthService {
             studentRepository.save(student);
             String newAccessToken = jwtUtil.generateToken(studentCod, 24 * 60 * 60 * 1000); // 24 hours
             if (newAccessToken == null) {
-                throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
+                throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generando token");
             }
             return ResponseEntity.ok().body(Map.of("accessToken", newAccessToken));
         } else {
-            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Token inválido");
         }
     }
 
