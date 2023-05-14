@@ -5,49 +5,47 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "student")
-public class Student {
+@Entity(name = "admin")
+public class Admin {
 
     @Id
     @Column(
-            name = "student_cod"
+            name = "admin_cod"
     )
-    private String studentCod;
+    private String adminCod;
     @Column(
             name = "names",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String names;
+	private String names;
     @Column(
             name = "last_names",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String lastName;
-    @Column(
-            name = "birthday",
-            nullable = false,
-            columnDefinition = "DATE"
-    )
-    private Date birthday;
+	private String lastNames;
     @Column(
             name = "password",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String password;
+	private String password;
     @Column(
             name = "salt",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String salt;
+	private String salt;
+    @Column(
+            name = "birthday",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+	private String birthday;
     @Column(
             name = "dni",
             nullable = false,
@@ -59,33 +57,20 @@ public class Student {
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String address;
+	private String direction;
     @Column(
             name = "email",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String email;
+	private String email;
     @Column(
             name = "number",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String phone;
-    @Column(
-            name = "current_grade",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private char currentGrade;
-    @Column(
-            name = "current_level",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String currentLevel;
+	private String number;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private Users user;
-
 }
