@@ -4,7 +4,7 @@ import com.integrador.svfapi.classes.Enrollment;
 import com.integrador.svfapi.classes.Representatives;
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Student;
-import com.integrador.svfapi.dto.studentInformation.StudentWithEnrollmentDTO;
+import com.integrador.svfapi.dto.studentInformation.EnrolledStudentDTO;
 import com.integrador.svfapi.dto.studentInformation.StudentWithOutEnrollmentDTO;
 import com.integrador.svfapi.dto.getAllStudents.StudentDTO;
 import com.integrador.svfapi.repository.EnrollmentRepository;
@@ -43,13 +43,13 @@ public class StudentServiceIMPL implements StudentService {
         Optional <Enrollment> result = Optional.ofNullable(enrollmentRepository.findByStudentCod(studentCod));
         if (result.isPresent()) {
             Enrollment foundEnrollment = result.get();
-            StudentWithEnrollmentDTO studentWithEnrollmentDTO = new StudentWithEnrollmentDTO(
+            EnrolledStudentDTO enrolledStudentDTO = new EnrolledStudentDTO(
                     studentCod,
                     student.getNames(),
                     student.getLastName(),
                     foundEnrollment.getEnrollmentId());
 
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(), studentWithEnrollmentDTO));
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(), enrolledStudentDTO));
 
         } else {
             String[] newLevelAndGrade;
