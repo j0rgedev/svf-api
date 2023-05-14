@@ -1,6 +1,6 @@
 package com.integrador.svfapi.controllers;
 
-import com.integrador.svfapi.service.StudentServiceImpl;
+import com.integrador.svfapi.service.impl.StudentServiceIMPL;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/enrollment")
 public class StudentController {
 
-    private final StudentServiceImpl studentServiceImpl;
+    private final StudentServiceIMPL studentServiceImpl;
     @Autowired
-    public StudentController(StudentServiceImpl studentServiceImpl) {
+    public StudentController(StudentServiceIMPL studentServiceImpl) {
         this.studentServiceImpl = studentServiceImpl;
     }
 

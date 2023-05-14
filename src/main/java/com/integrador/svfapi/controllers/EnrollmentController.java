@@ -1,9 +1,8 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
-import com.integrador.svfapi.service.EnrollmentService;
+import com.integrador.svfapi.service.impl.EnrollmentServiceIMPL;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +13,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/enrollment")
 public class EnrollmentController {
 
-    private final EnrollmentService enrollmentService;
+    private final EnrollmentServiceIMPL enrollmentServiceIMPL;
 
     @Autowired
-    public EnrollmentController(EnrollmentService enrollmentService) {
-        this.enrollmentService = enrollmentService;
+    public EnrollmentController(EnrollmentServiceIMPL enrollmentServiceIMPL) {
+        this.enrollmentServiceIMPL = enrollmentServiceIMPL;
     }
 
     @GetMapping("/details")
     public ResponseEntity<?> enrollmentDetails(){
-        return enrollmentService.enrollmentDetails();
+        return enrollmentServiceIMPL.enrollmentDetails();
     }
 
     @PostMapping("/process")
@@ -33,6 +32,6 @@ public class EnrollmentController {
     ){
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return enrollmentService.enrollmentProcess(token, enrollmentDTO);
+        return enrollmentServiceIMPL.enrollmentProcess(token, enrollmentDTO);
     }
 }
