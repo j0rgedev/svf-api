@@ -1,4 +1,4 @@
-package com.integrador.svfapi.service;
+package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Sms;
@@ -7,7 +7,7 @@ import com.integrador.svfapi.dto.AuthDTO;
 import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.SmsRepository;
 import com.integrador.svfapi.repository.StudentRepository;
-import com.integrador.svfapi.service.interfaces.AuthService;
+import com.integrador.svfapi.service.AuthService;
 import com.integrador.svfapi.utils.AESEncryption;
 import com.integrador.svfapi.utils.JwtUtil;
 import com.integrador.svfapi.utils.PasswordEncryption;

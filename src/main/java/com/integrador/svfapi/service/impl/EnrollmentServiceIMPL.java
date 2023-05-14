@@ -1,4 +1,4 @@
-package com.integrador.svfapi.service;
+package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.EnrollmentDetailsDTO;
@@ -6,7 +6,7 @@ import com.integrador.svfapi.dto.enrollmentDetailsResponse.LevelCostsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.TermDetailsDTO;
 import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.repository.*;
-import com.integrador.svfapi.service.interfaces.EnrollmentService;
+import com.integrador.svfapi.service.EnrollmentService;
 import com.integrador.svfapi.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class EnrollmentServiceIMPL implements EnrollmentService {
 

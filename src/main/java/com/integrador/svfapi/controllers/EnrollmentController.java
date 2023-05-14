@@ -1,7 +1,7 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
-import com.integrador.svfapi.service.EnrollmentServiceIMPL;
+import com.integrador.svfapi.service.impl.EnrollmentServiceIMPL;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package com.integrador.svfapi.service;
+package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.Enrollment;
 import com.integrador.svfapi.classes.Representatives;
@@ -9,7 +9,7 @@ import com.integrador.svfapi.dto.studentInformation.StudentWithOutEnrollmentDTO;
 import com.integrador.svfapi.dto.getAllStudents.StudentDTO;
 import com.integrador.svfapi.repository.EnrollmentRepository;
 import com.integrador.svfapi.repository.StudentRepository;
-import com.integrador.svfapi.service.interfaces.StudentService;
+import com.integrador.svfapi.service.StudentService;
 import com.integrador.svfapi.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

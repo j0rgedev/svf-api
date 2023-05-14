@@ -1,7 +1,7 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.AuthDTO;
-import com.integrador.svfapi.service.AuthServiceIMPL;
+import com.integrador.svfapi.service.impl.AuthServiceIMPL;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;

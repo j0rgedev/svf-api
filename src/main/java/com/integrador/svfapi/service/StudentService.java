@@ -1,4 +1,4 @@
-package com.integrador.svfapi.service.interfaces;
+package com.integrador.svfapi.service;
 
 import com.integrador.svfapi.classes.Representatives;
 import com.integrador.svfapi.classes.ResponseFormat;
