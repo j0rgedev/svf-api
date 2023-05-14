@@ -5,8 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class StudentWithEnrollmentDTO {
-
+public class EnrolledStudentDTO {
     private String studentCod;
     private String names;
     private String lastNames;
