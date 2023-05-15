@@ -11,11 +11,12 @@ import lombok.NoArgsConstructor;
 @Entity(name = "student_representatives")
 public class StudentRepresentatives {
 
+    @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_cod", referencedColumnName = "student_cod")
     private Student student_cod;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "representative_dni", referencedColumnName = "dni")
+    @JoinColumn(name = "representatives_dni", referencedColumnName = "dni")
 	private Representatives representativesDni;
     @Column(
             name = "relation",
