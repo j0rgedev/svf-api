@@ -1,4 +1,4 @@
-#### Proceso de la matrícula
+# Proceso de la matrícula
 Este endpoint se encarga de procesar la matrícula del alumno.
 
 ```http

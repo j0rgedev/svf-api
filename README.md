@@ -1,20 +1,26 @@
 # SVF API
-Documentación de la API del colegio San Vicente Ferrer.
+Documentación oficial de la API del colegio San Vicente Ferrer.
 
 ## Tabla de contenidos
-A continuación, se detallará como se debe consumir esta API correctamente.
+A continuación se detallará como se debe consumir la API correctamente.
 
-### Pre-requisitos
+### Prerrequisitos
 Antes de empezar, se debe tener instalado lo siguiente:
 - JDK 17
 - IntelliJ IDEA
 
+### Instalación
+Para poder ejecutar el proyecto, se debe seguir los siguientes pasos:
+1. Clonar el repositorio
+2. Abrir el proyecto en IntelliJ IDEA
+3. Dirigirse a la clase `SvfApiApplication.java` y ejecutarla
+
 ### URL de la API
-Debido a que esta API se encuentra en desarrollo, se debe utilizar la siguiente URL base para consumir los servicios por el momento:
-http://localhost:8080/api/v1/
+Debido a que esta API se encuentra en desarrollo, se debe utilizar la siguiente URL base para consumir los servicios por el momento:  
+**http://localhost:8080/api/v1/**
 
 ### Autenticación
-Para poder consumir los servicios de esta API, se debe autenticar mediante un token JWT. Los token temporales tienen una duración de 5 minutos, y los token permanentes tienen una duración de 1 día.
+Para poder consumir los servicios de esta API, se debe autenticar mediante un token JWT. El token temporal tienen una duración de 5 minutos, y el token permanente tienen una duración de 1 día.
 - [Inicio de Sesión](docs/Login.md)
 
 En caso de los estudiantes, si tienen una contraseña por defecto, se les pedirá que la cambien por una nueva, pero primero deberán validar su identidad mediante un código que se les enviará a su número de celular.
@@ -23,15 +29,28 @@ En caso de los estudiantes, si tienen una contraseña por defecto, se les pedir�
 
 
 ### Endpoints
-Este proyecto tiene 3 páginas principales: la matrícula del alumno, el intranet del alumno y el intranet del administrador. Por lo tanto, los endpoints se dividen en 3 grupos para una mayor comprensión.
+Este proyecto tiene 3 páginas principales: la matrícula del alumno, la intranet del alumno y la intranet del administrador. Por lo tanto, los endpoints se dividen en 3 grupos para una mayor comprensión.
 
 #### Matrícula
+Esta página es la que se encarga de la matrícula del alumno y cuenta con los siguientes endpoints:
 - [Información del estudiante](docs/StudentInfo.md)
 - [Detalles de la matrícula](docs/EnrollmentDetails.md)
 - [Proceso de la matrícula](docs/EnrollmentProcess.md)
 
 ### Intranet del administrador
-- En desarrollo
+Esta página se encarga del CRUD de los estudiantes y toda la información relacionada con los pagos de pensiones y matrícula, y cuenta con los siguientes endpoints:
+- CRUD Estudiantes
+  - [Búsqueda general de estudiantes](docs/StudentSearch.md)
+  - [Búsqueda de estudiante por código](docs/StudentSearchByCode.md)
+  - [Lista de estudiantes](docs/StudentList.md)
+  - [Agregar estudiante](docs/AddStudent.md)
+  - [Actualizar estudiante](docs/UpdateStudent.md)
+  - [Eliminar estudiante](docs/DeleteStudent.md)
+- Analíticas y estadísticas
+  - En desarrollo
 
 ### Intranet del alumno
+- En desarrollo
+
+### Manejo de errores
 - En desarrollo

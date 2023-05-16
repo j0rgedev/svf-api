@@ -2,7 +2,7 @@
 Este endpoint se utiliza para validar el código de verificación enviado por SMS al número de celular del estudiante.
 
 ```http
-POST /login/validacion
+POST /login/sms-validation
 ```
 
 `Header`
