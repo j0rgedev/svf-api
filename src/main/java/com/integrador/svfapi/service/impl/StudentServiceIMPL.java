@@ -48,7 +48,8 @@ public class StudentServiceIMPL implements StudentService {
                     student.getLastName(),
                     foundEnrollment.getEnrollmentId());
 
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(), enrolledStudentDTO));
+            String msg = "El estudiante ya cuenta con una matricula registrada";
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, enrolledStudentDTO));
 
         } else {
             String[] newLevelAndGrade;
@@ -63,7 +64,8 @@ public class StudentServiceIMPL implements StudentService {
                     student.getCurrentLevel(),
                     student.getCurrentGrade());
 
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(), notEnrolledStudent));
+            String msg = "El estudiante aún no cuenta con una matricula registrada";
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, notEnrolledStudent));
 
         }
     }
@@ -86,7 +88,8 @@ public class StudentServiceIMPL implements StudentService {
             allStudentsDTO.add(studentDTO);
         }
 
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), allStudentsDTO));
+        String msg = "Se envía la lista de estudiantes registrados en el sistema";
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, allStudentsDTO));
     }
 
     @Override
@@ -94,7 +97,8 @@ public class StudentServiceIMPL implements StudentService {
 
         Student student = studentRepository.findByStudentCod(studentCod);
 
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), student));
+        String msg = "Este es el resultado de la búsqueda";
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, student));
     }
 
     /*
