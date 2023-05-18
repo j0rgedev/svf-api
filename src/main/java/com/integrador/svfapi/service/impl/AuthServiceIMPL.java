@@ -63,13 +63,15 @@ public class AuthServiceIMPL implements AuthService {
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
                 twilioSMS.sendMessage(studentPhoneNumber, smsCode);
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), redirectUrl));
+                String msg = "El usuario posee una contraseña con el formato default";
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, redirectUrl));
             } else {
                 String accessToken = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
                 if (accessToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), accessToken));
+                String msg = "Las credenciales ingresadas por el usuario son autenticas";
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, accessToken));
             }
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
@@ -87,7 +89,8 @@ public class AuthServiceIMPL implements AuthService {
                 if (tempToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), tempToken));
+                String msg = "La validación por SMS se realizado correctamente";
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, tempToken));
             } else {
                 throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid sms code");
             }
@@ -109,7 +112,8 @@ public class AuthServiceIMPL implements AuthService {
             if (newAccessToken == null) {
                 throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
             }
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), newAccessToken));
+            String msg = "La contraseña se ha actualizado correctamente";
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newAccessToken));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }

@@ -69,8 +69,9 @@ public class EnrollmentServiceIMPL implements EnrollmentService {
             amountsDTO.add(new LevelCostsDTO(levelCosts.getName(), levelCosts.getCost()));
         }
         response.setLevelCosts(amountsDTO);
+        String msg = "Se envian los datos de matricula del presente año escolar";
 
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), response));
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, response));
     }
 
     @Override
@@ -103,7 +104,8 @@ public class EnrollmentServiceIMPL implements EnrollmentService {
             enrollmentRepository.saveAndFlush(enrollment);
             enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
         }
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), newEnrollmentId));
+        String msg = "El Id de la nueva matrícula se ha generado correctamente";
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newEnrollmentId));
     }
 
     private String createEnrollmentId(String id){
