@@ -84,6 +84,12 @@ public class Student {
             columnDefinition = "TEXT"
     )
     private String currentLevel;
+    @Column(
+            name = "status",
+            nullable = false,
+            columnDefinition = "Tinyint(1)"
+    )
+    boolean isEnrolled;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private Users user;

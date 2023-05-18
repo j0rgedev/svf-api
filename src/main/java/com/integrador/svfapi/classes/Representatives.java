@@ -61,5 +61,5 @@ public class Representatives {
 			nullable = false,
 			columnDefinition = "TEXT"
 	)
-	private char id;
+	private String id;
 }
