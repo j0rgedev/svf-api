@@ -10,6 +10,5 @@ public record ResponseFormat(Integer status, String message, Object data) {
         this.message = message;
         Objects.requireNonNull(message);
         this.data = data;
-        Objects.requireNonNull(data);
     }
 }

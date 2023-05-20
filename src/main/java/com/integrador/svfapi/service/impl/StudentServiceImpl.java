@@ -125,7 +125,7 @@ public class StudentServiceImpl implements StudentService {
         if (jwtUtil.validateToken(token, studentCod)) {
             User newUser = new User(
                     codeGenerator.generateNextUserId(userRepository.findTopByOrderByUserIdDesc().getUserId()),
-                    false,
+                    true,
                     "A10");
             String salt = passwordEncryption.getSaltvalue(30);
             String defaultPassword = codeGenerator.createDefaultPasswordFormat(
@@ -183,22 +183,22 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public ResponseEntity<ResponseFormat> updateStudent(String token, String studentCod, UpdateStudentInfoDTO updateStudentInfoDTO) {
+    public ResponseEntity<ResponseFormat> updateStudent(String token, String studentCod, UpdateStudentInfoDTO updateStudentInfo) {
         String userCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, userCod)) {
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
-                Student foundStudent = studentRepository.findByStudentCod(studentCod);
-                foundStudent.setNames(updateStudentInfoDTO.getNewNames());
-                foundStudent.setLastNames(updateStudentInfoDTO.getNewLastName());
-                foundStudent.setBirthday(updateStudentInfoDTO.getNewBirthday());
-                foundStudent.setDni(updateStudentInfoDTO.getNewDni());
-                foundStudent.setAddress(updateStudentInfoDTO.getNewAddress());
-                foundStudent.setEmail(updateStudentInfoDTO.getNewEmail());
-                foundStudent.setPhone(updateStudentInfoDTO.getNewPhone());
-                foundStudent.setCurrentGrade(updateStudentInfoDTO.getNewGrade());
-                foundStudent.setCurrentLevel(updateStudentInfoDTO.getNewLevel());
-
+                Student foundStudent = result.get();
+                foundStudent.setNames(updateStudentInfo.getNewNames());
+                foundStudent.setLastNames(updateStudentInfo.getNewLastNames());
+                foundStudent.setBirthday(updateStudentInfo.getNewBirthday());
+                foundStudent.setDni(updateStudentInfo.getNewDni());
+                foundStudent.setAddress(updateStudentInfo.getNewAddress());
+                foundStudent.setEmail(updateStudentInfo.getNewEmail());
+                foundStudent.setPhone(updateStudentInfo.getNewPhone());
+                foundStudent.setCurrentGrade(updateStudentInfo.getNewGrade());
+                foundStudent.setCurrentLevel(updateStudentInfo.getNewLevel());
+                studentRepository.save(foundStudent);
                 return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "La informacion se actualizo correctamente", null));
             } else {
                 throw new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe");
@@ -215,8 +215,12 @@ public class StudentServiceImpl implements StudentService {
         if (jwtUtil.validateToken(token, userCod)) {
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
-                studentRepository.deleteById(studentCod);
-                String msg = "El estudiante se elimino de la base de datos correctamente";
+                Student foundStudent = result.get();
+                User user = userRepository.getReferenceById(foundStudent.getUser().getUserId());
+                user.setActive(false);
+                userRepository.save(user);
+                String msg = "El estado del usuario fue cambiado a inactivo y" +
+                            " su cuenta sera borrada del registro en 30 días. ";
                 return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, null));
             } else {
                 throw new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe");

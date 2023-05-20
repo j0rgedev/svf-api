@@ -1,8 +1,6 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
-import com.integrador.svfapi.dto.addStudentBody.RepresentativeInfoDTO;
-import com.integrador.svfapi.dto.addStudentBody.StudentInfoDTO;
 import com.integrador.svfapi.dto.updateStudentBody.UpdateStudentInfoDTO;
 import com.integrador.svfapi.service.impl.StudentServiceImpl;
 import jakarta.validation.constraints.NotBlank;
@@ -38,12 +36,12 @@ public class AdminController {
     public ResponseEntity<?> updateStudent(
             @RequestHeader("Authorization") @NotBlank String token,
             @PathVariable String studentCod,
-            @RequestBody UpdateStudentInfoDTO updateStudentInfoDTO
+            @RequestBody UpdateStudentInfoDTO updateStudentInfo
             ) {
         // Check if the token is valid
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.updateStudent(token, studentCod,updateStudentInfoDTO);
+        return studentServiceImpl.updateStudent(token, studentCod,updateStudentInfo);
     }
 
     @PostMapping("/student/delete/{studentCod}") // Endpoint to delete a student

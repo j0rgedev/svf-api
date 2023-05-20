@@ -10,7 +10,7 @@ import java.util.Date;
 public class UpdateStudentInfoDTO {
 
     private String newNames;
-    private String newLastName;
+    private String newLastNames;
     private Date newBirthday;
     private String newDni;
     private String newAddress;
