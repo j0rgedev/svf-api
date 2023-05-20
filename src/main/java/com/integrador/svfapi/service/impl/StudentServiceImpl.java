@@ -135,16 +135,16 @@ public class StudentServiceImpl implements StudentService {
             Student newStudent = new Student(
                     codeGenerator.generateNextStudentCod(studentRepository.findTopByOrderByStudentCodDesc().getStudentCod()),
                     addStudentBodyDTO.getStudentInfo().getNames(),
-                    addStudentBodyDTO.getStudentInfo().getLastNames(),
-                    addStudentBodyDTO.getStudentInfo().getBirthday(),
+                    addStudentBodyDTO.getStudentInfo().getLastnames(),
+                    addStudentBodyDTO.getStudentInfo().getBirthdate(),
                     encryptedPassword,
                     salt,
                     addStudentBodyDTO.getStudentInfo().getDni(),
-                    addStudentBodyDTO.getStudentInfo().getAddress(),
+                    addStudentBodyDTO.getStudentInfo().getDirection(),
                     addStudentBodyDTO.getStudentInfo().getEmail(),
-                    addStudentBodyDTO.getStudentInfo().getPhoneNumber(),
-                    addStudentBodyDTO.getStudentInfo().getCurrentGrade(),
-                    addStudentBodyDTO.getStudentInfo().getCurrentLevel(),
+                    addStudentBodyDTO.getStudentInfo().getPhone(),
+                    addStudentBodyDTO.getStudentInfo().getGrade(),
+                    addStudentBodyDTO.getStudentInfo().getLevel(),
                     false,
                     newUser
             );
@@ -152,17 +152,18 @@ public class StudentServiceImpl implements StudentService {
             Representative newRepresentative = new Representative(
                     addStudentBodyDTO.getRepresentativeInfo().getDni(),
                     addStudentBodyDTO.getRepresentativeInfo().getNames(),
-                    addStudentBodyDTO.getRepresentativeInfo().getLastNames(),
-                    addStudentBodyDTO.getRepresentativeInfo().getBirthday(),
-                    addStudentBodyDTO.getRepresentativeInfo().getAddress(),
+                    addStudentBodyDTO.getRepresentativeInfo().getLastnames(),
+                    addStudentBodyDTO.getRepresentativeInfo().getBirthdate(),
+                    addStudentBodyDTO.getRepresentativeInfo().getDirection(),
                     addStudentBodyDTO.getRepresentativeInfo().getEmail(),
-                    addStudentBodyDTO.getRepresentativeInfo().getPhoneNumber()
+                    addStudentBodyDTO.getRepresentativeInfo().getPhone(),
+                    addStudentBodyDTO.getRepresentativeInfo().getOccupation()
             );
 
             StudentRepresentatives newStudentRepresentatives = new StudentRepresentatives(
                     newStudent,
                     newRepresentative,
-                    addStudentBodyDTO.getRepresentativeInfo().getRelationship(),
+                    addStudentBodyDTO.getRepresentativeInfo().getKinship(),
                     codeGenerator.generateNextRelationCod(studentRepresentativesRepository.findTopByOrderByRelationCodeDesc().getRelationCode()));
 
             Map<String, String> data = new HashMap<>();

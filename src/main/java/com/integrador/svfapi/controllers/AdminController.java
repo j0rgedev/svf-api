@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,7 +26,7 @@ public class AdminController {
     @PostMapping("/student/add") // Endpoint to add student
     public ResponseEntity<?> addStudent(
             @RequestHeader("Authorization") @NotBlank String token,
-            @RequestBody AddStudentBodyDTO addStudentBodyDTO
+            @Validated @RequestBody AddStudentBodyDTO addStudentBodyDTO
             ) {
         // Check if the token is valid
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

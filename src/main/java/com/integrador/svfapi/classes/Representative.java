@@ -56,4 +56,10 @@ public class Representative {
 			columnDefinition = "TEXT"
 	)
 	private String number;
+	@Column(
+			name = "occupation",
+			nullable = false,
+			columnDefinition = "TEXT"
+	)
+	private String occupation;
 }
