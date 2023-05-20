@@ -1,18 +1,15 @@
 package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
-import com.integrador.svfapi.dto.addStudentBody.RepresentativeInfoDTO;
-import com.integrador.svfapi.dto.addStudentBody.StudentInfoDTO;
+import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.getAllStudents.StudentListDTO;
 import com.integrador.svfapi.dto.studentInformation.EnrolledStudentDTO;
 import com.integrador.svfapi.dto.studentInformation.NotEnrolledStudent;
 import com.integrador.svfapi.dto.updateStudentBody.UpdateStudentInfoDTO;
 import com.integrador.svfapi.exception.BusinessException;
-import com.integrador.svfapi.repository.EnrollmentRepository;
-import com.integrador.svfapi.repository.RepresentativesRepository;
-import com.integrador.svfapi.repository.StudentRepository;
-import com.integrador.svfapi.repository.UsersRepository;
+import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.StudentService;
+import com.integrador.svfapi.utils.CodeGenerator;
 import com.integrador.svfapi.utils.JwtUtil;
 import com.integrador.svfapi.utils.PasswordEncryption;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,31 +17,37 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
-public class StudentServiceIMPL implements StudentService {
+public class StudentServiceImpl implements StudentService {
 
     private final JwtUtil jwtUtil;
     private final StudentRepository studentRepository;
     private final RepresentativesRepository representativesRepository;
+    private final StudentRepresentativesRepository studentRepresentativesRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final UsersRepository usersRepository;
-
+    private final UserRepository userRepository;
+    private final CodeGenerator codeGenerator;
     private final PasswordEncryption passwordEncryption;
 
     @Autowired
-    public StudentServiceIMPL(
+    public StudentServiceImpl(
             JwtUtil jwtUtil,
             StudentRepository studentRepository,
-            RepresentativesRepository representativesRepository, EnrollmentRepository enrollmentRepository,
-            UsersRepository usersRepository, PasswordEncryption passwordEncryption) {
+            RepresentativesRepository representativesRepository,
+            StudentRepresentativesRepository studentRepresentativesRepository,
+            EnrollmentRepository enrollmentRepository,
+            UserRepository userRepository,
+            CodeGenerator codeGenerator,
+            PasswordEncryption passwordEncryption) {
         this.jwtUtil = jwtUtil;
         this.studentRepository = studentRepository;
         this.representativesRepository = representativesRepository;
+        this.studentRepresentativesRepository = studentRepresentativesRepository;
         this.enrollmentRepository = enrollmentRepository;
-        this.usersRepository = usersRepository;
+        this.userRepository = userRepository;
+        this.codeGenerator = codeGenerator;
         this.passwordEncryption = passwordEncryption;
     }
 
@@ -58,7 +61,7 @@ public class StudentServiceIMPL implements StudentService {
             EnrolledStudentDTO enrolledStudentDTO = new EnrolledStudentDTO(
                     studentCod,
                     student.getNames(),
-                    student.getLastName(),
+                    student.getLastNames(),
                     foundEnrollment.getEnrollmentId());
 
             String msg = "El estudiante ya cuenta con una matricula registrada";
@@ -72,7 +75,7 @@ public class StudentServiceIMPL implements StudentService {
             NotEnrolledStudent notEnrolledStudent = new NotEnrolledStudent(
                     studentCod,
                     student.getNames(),
-                    student.getLastName(),
+                    student.getLastNames(),
                     student.getDni(),
                     student.getCurrentLevel(),
                     student.getCurrentGrade());
@@ -96,7 +99,7 @@ public class StudentServiceIMPL implements StudentService {
 
             StudentListDTO studentDTO = new StudentListDTO(
                     student.getStudentCod(),
-                    student.getNames() + " " + student.getLastName(),
+                    student.getNames() + " " + student.getLastNames(),
                     student.getBirthday(), isEnrolled);
             allStudentsDTO.add(studentDTO);
         }
@@ -117,48 +120,58 @@ public class StudentServiceIMPL implements StudentService {
     }
 
     @Override
-    public ResponseEntity<ResponseFormat> addStudent(String token, StudentInfoDTO studentInfoDTO, RepresentativeInfoDTO representativeInfoDTO) {
+    public ResponseEntity<ResponseFormat> addStudent(String token, AddStudentBodyDTO addStudentBodyDTO) {
         String studentCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, studentCod)) {
-            Users newUsers = new  Users(generateNextUserId(),false);
+            User newUser = new User(
+                    codeGenerator.generateNextUserId(userRepository.findTopByOrderByUserIdDesc().getUserId()),
+                    false,
+                    "A10");
             String salt = passwordEncryption.getSaltvalue(30);
-            int currentYear = LocalDate.now().getYear();
-            String defaultPassword = createDefaultPasswordFormat(studentInfoDTO.getDni(), studentInfoDTO.getNames(), currentYear);
+            String defaultPassword = codeGenerator.createDefaultPasswordFormat(
+                    addStudentBodyDTO.getStudentInfo().getNames(),
+                    addStudentBodyDTO.getStudentInfo().getDni());
             String encryptedPassword = passwordEncryption.generateSecurePassword(defaultPassword, salt);
             Student newStudent = new Student(
-                    generateNextStudentCod(),
-                    studentInfoDTO.getNames(),
-                    studentInfoDTO.getLastNames(),
-                    studentInfoDTO.getBirthday(),
+                    codeGenerator.generateNextStudentCod(studentRepository.findTopByOrderByStudentCodDesc().getStudentCod()),
+                    addStudentBodyDTO.getStudentInfo().getNames(),
+                    addStudentBodyDTO.getStudentInfo().getLastNames(),
+                    addStudentBodyDTO.getStudentInfo().getBirthday(),
                     encryptedPassword,
                     salt,
-                    studentInfoDTO.getDni(),
-                    studentInfoDTO.getAddress(),
-                    studentInfoDTO.getEmail(),
-                    studentInfoDTO.getPhoneNumber(),
-                    studentInfoDTO.getCurrentGrade(),
-                    studentInfoDTO.getCurrentLevel(),
+                    addStudentBodyDTO.getStudentInfo().getDni(),
+                    addStudentBodyDTO.getStudentInfo().getAddress(),
+                    addStudentBodyDTO.getStudentInfo().getEmail(),
+                    addStudentBodyDTO.getStudentInfo().getPhoneNumber(),
+                    addStudentBodyDTO.getStudentInfo().getCurrentGrade(),
+                    addStudentBodyDTO.getStudentInfo().getCurrentLevel(),
                     false,
-                    newUsers
+                    newUser
             );
 
-            Representatives newRepresentatives= new Representatives(
-                    representativeInfoDTO.getDni(),
-                    representativeInfoDTO.getNames(),
-                    representativeInfoDTO.getLastNames(),
-                    representativeInfoDTO.getBirthday(),
-                    representativeInfoDTO.getAddress(),
-                    representativeInfoDTO.getEmail(),
-                    representativeInfoDTO.getPhoneNumber(),
-                    "To be decided"
+            Representative newRepresentative = new Representative(
+                    addStudentBodyDTO.getRepresentativeInfo().getDni(),
+                    addStudentBodyDTO.getRepresentativeInfo().getNames(),
+                    addStudentBodyDTO.getRepresentativeInfo().getLastNames(),
+                    addStudentBodyDTO.getRepresentativeInfo().getBirthday(),
+                    addStudentBodyDTO.getRepresentativeInfo().getAddress(),
+                    addStudentBodyDTO.getRepresentativeInfo().getEmail(),
+                    addStudentBodyDTO.getRepresentativeInfo().getPhoneNumber()
             );
+
+            StudentRepresentatives newStudentRepresentatives = new StudentRepresentatives(
+                    newStudent,
+                    newRepresentative,
+                    addStudentBodyDTO.getRepresentativeInfo().getRelationship(),
+                    codeGenerator.generateNextRelationCod(studentRepresentativesRepository.findTopByOrderByRelationCodeDesc().getRelationCode()));
 
             Map<String, String> data = new HashMap<>();
             data.put("studentCode", newStudent.getStudentCod());
             data.put("defaultPassword", defaultPassword);
-            usersRepository.save(newUsers);
+            userRepository.save(newUser);
             studentRepository.save(newStudent);
-            representativesRepository.save(newRepresentatives);
+            representativesRepository.save(newRepresentative);
+            studentRepresentativesRepository.save(newStudentRepresentatives);
             String msg = "El registro se realizo correctamente";
             return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
 
@@ -175,13 +188,15 @@ public class StudentServiceIMPL implements StudentService {
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = studentRepository.findByStudentCod(studentCod);
-                foundStudent.setNames(updateStudentInfoDTO.getNames());
-                foundStudent.setLastName(updateStudentInfoDTO.getLastName());
-                foundStudent.setBirthday(updateStudentInfoDTO.getBirthday());
-                foundStudent.setDni(updateStudentInfoDTO.getDni());
-                foundStudent.setAddress(updateStudentInfoDTO.getAddress());
-                foundStudent.setEmail(updateStudentInfoDTO.getEmail());
-                foundStudent.setPhone(foundStudent.getPhone());
+                foundStudent.setNames(updateStudentInfoDTO.getNewNames());
+                foundStudent.setLastNames(updateStudentInfoDTO.getNewLastName());
+                foundStudent.setBirthday(updateStudentInfoDTO.getNewBirthday());
+                foundStudent.setDni(updateStudentInfoDTO.getNewDni());
+                foundStudent.setAddress(updateStudentInfoDTO.getNewAddress());
+                foundStudent.setEmail(updateStudentInfoDTO.getNewEmail());
+                foundStudent.setPhone(updateStudentInfoDTO.getNewPhone());
+                foundStudent.setCurrentGrade(updateStudentInfoDTO.getNewGrade());
+                foundStudent.setCurrentLevel(updateStudentInfoDTO.getNewLevel());
 
                 return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "La informacion se actualizo correctamente", null));
             } else {
@@ -237,57 +252,5 @@ public class StudentServiceIMPL implements StudentService {
         return newLevelAndGrade;
     }
 
-    protected String generateNextUserId() {
-        // Obtener el último ID registrado en la base de datos
-        String lastId = usersRepository.findLastUserId();
 
-        // Extraer el número de secuencia del último ID
-        int sequenceNumber = extractSequenceNumber(lastId);
-
-        // Generar el próximo número de secuencia y combinarlo con la parte fija del formato
-        String nextId = "U" + (sequenceNumber + 1);
-
-        // Verificar la disponibilidad del ID en la base de datos
-        while (usersRepository.existsById(nextId)) {
-            sequenceNumber++;
-            nextId = "U" + (sequenceNumber + 1);
-        }
-
-        return nextId;
-    }
-
-    private int extractSequenceNumber(String userId) {
-        // Extraer el número de secuencia de un ID en base al formato conocido
-        String sequence = userId.substring(1); // Excluir la parte fija 'U'
-        return Integer.parseInt(sequence);
-    }
-
-    public String generateNextStudentCod() {
-        // Obtener el último ID registrado en la base de datos
-        String lastId = studentRepository.findLastStudentCod();
-
-        // Extraer el número de secuencia del último ID
-        int sequenceNumber = extractSequenceNumber3(lastId);
-
-        // Generar el próximo número de secuencia y combinarlo con la parte fija del formato
-        String nextId = "SVF" + String.format("%04d", sequenceNumber + 1);
-
-        // Verificar la disponibilidad del ID en la base de datos
-        while (studentRepository.existsById(nextId)) {
-            sequenceNumber++;
-            nextId = "SVF" + String.format("%04d", sequenceNumber + 1);
-        }
-
-        return nextId;
-    }
-
-    private int extractSequenceNumber3(String studentId) {
-        // Extraer el número de secuencia de un ID en base al formato conocido
-        String sequence = studentId.substring(3); // Excluir la parte fija 'SVF'
-        return Integer.parseInt(sequence);
-    }
-
-    private String createDefaultPasswordFormat(String dni, String firstName, int currentYear) {
-        return String.format("%d%s%s", currentYear, firstName.toLowerCase(), dni);
-    }
 }

@@ -72,5 +72,5 @@ public class Admin {
 	private String number;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private Users user;
+    private User user;
 }

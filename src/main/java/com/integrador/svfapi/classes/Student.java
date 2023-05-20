@@ -15,7 +15,8 @@ public class Student {
 
     @Id
     @Column(
-            name = "student_cod"
+            name = "student_cod",
+            columnDefinition = "char(7)"
     )
     private String studentCod;
     @Column(
@@ -29,7 +30,7 @@ public class Student {
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String lastName;
+    private String lastNames;
     @Column(
             name = "birthday",
             nullable = false,
@@ -75,7 +76,7 @@ public class Student {
     @Column(
             name = "current_grade",
             nullable = false,
-            columnDefinition = "TEXT"
+            columnDefinition = "char(1)"
     )
     private char currentGrade;
     @Column(
@@ -85,13 +86,13 @@ public class Student {
     )
     private String currentLevel;
     @Column(
-            name = "status",
+            name = "is_enrolled",
             nullable = false,
             columnDefinition = "Tinyint(1)"
     )
     boolean isEnrolled;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private Users user;
+    private User user;
 
 }

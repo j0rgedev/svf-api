@@ -19,10 +19,11 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
-public class AuthServiceIMPL implements AuthService {
+public class AuthServiceImpl implements AuthService {
 
     private final JwtUtil jwtUtil;
     private final TwilioSMS twilioSMS;
@@ -32,7 +33,7 @@ public class AuthServiceIMPL implements AuthService {
     private final AESEncryption aesEncryption;
 
     @Autowired
-    public AuthServiceIMPL(
+    public AuthServiceImpl(
             JwtUtil jwtUtil,
             TwilioSMS twilioSMS,
             StudentRepository studentRepository,
@@ -50,23 +51,24 @@ public class AuthServiceIMPL implements AuthService {
 
     @Override
     public ResponseEntity<ResponseFormat> login(AuthDTO authDTO) {
-        String studentCode = authDTO.getStudentCod();
-        Student student = studentRepository.getReferenceById(studentCode);
-        boolean isDefaultPassword = checkPasswordDefaultFormat(studentCode);
+        String studentCod = authDTO.getStudentCod();
+        Student student = studentRepository.getReferenceById(studentCod);
+
+        boolean isDefaultPassword = checkPasswordDefaultFormat(studentCod);
 
         if (checkCredentials(authDTO)) {
             if (isDefaultPassword) {
-                String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
+                String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
                 String smsCode = String.valueOf(generateRandomNumber());
                 String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
-                saveSms(studentCode, smsCode);
+                saveSms(studentCod, smsCode);
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
                 twilioSMS.sendMessage(studentPhoneNumber, smsCode);
                 String msg = "El usuario posee una contraseña con el formato default";
                 return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, redirectUrl));
             } else {
-                String accessToken = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
+                String accessToken = jwtUtil.generateToken(studentCod, 24 * 60 * 60 * 1000); // 24 hours
                 if (accessToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }

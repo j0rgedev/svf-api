@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class EnrollmentServiceIMPL implements EnrollmentService {
+public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final JwtUtil jwtUtil;
     private final EnrollmentRepository enrollmentRepository;
@@ -29,7 +29,7 @@ public class EnrollmentServiceIMPL implements EnrollmentService {
     private final LevelCostsRepository levelCostsRepository;
 
     @Autowired
-    public EnrollmentServiceIMPL(
+    public EnrollmentServiceImpl(
             JwtUtil jwtUtil,
             EnrollmentRepository enrollmentRepository,
             EnrollmentDetailsRepository enrollmentDetailsRepository,

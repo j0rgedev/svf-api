@@ -12,8 +12,8 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "representatives")
-public class Representatives {
+@Entity(name = "representative")
+public class Representative {
 
 	@Id
 	@Column(
@@ -56,10 +56,4 @@ public class Representatives {
 			columnDefinition = "TEXT"
 	)
 	private String number;
-	@Column(
-			name = "id",
-			nullable = false,
-			columnDefinition = "TEXT"
-	)
-	private String id;
 }

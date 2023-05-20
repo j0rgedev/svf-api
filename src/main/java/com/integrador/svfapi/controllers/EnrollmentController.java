@@ -1,7 +1,7 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
-import com.integrador.svfapi.service.impl.EnrollmentServiceIMPL;
+import com.integrador.svfapi.service.impl.EnrollmentServiceImpl;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/enrollment")
 public class EnrollmentController {
 
-    private final EnrollmentServiceIMPL enrollmentServiceIMPL;
+    private final EnrollmentServiceImpl enrollmentServiceIMPL;
 
     @Autowired
-    public EnrollmentController(EnrollmentServiceIMPL enrollmentServiceIMPL) {
+    public EnrollmentController(EnrollmentServiceImpl enrollmentServiceIMPL) {
         this.enrollmentServiceIMPL = enrollmentServiceIMPL;
     }
 

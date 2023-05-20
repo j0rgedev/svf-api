@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "users")
-public class Users {
+@Entity(name = "user")
+public class User {
 
     @Id
     @Column(
@@ -24,4 +24,8 @@ public class Users {
             columnDefinition = "tinyint(1)"
     )
     private boolean isActive;
+    @Column(
+            name = "role_code"
+    )
+    private String roleCode;
 }

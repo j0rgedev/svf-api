@@ -1,9 +1,10 @@
 package com.integrador.svfapi.repository;
 
-import com.integrador.svfapi.classes.Representative;
+import com.integrador.svfapi.classes.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RepresentativesRepository extends JpaRepository<Representative,String> {
+public interface UserRepository extends JpaRepository<User, String> {
+    User findTopByOrderByUserIdDesc();
 }

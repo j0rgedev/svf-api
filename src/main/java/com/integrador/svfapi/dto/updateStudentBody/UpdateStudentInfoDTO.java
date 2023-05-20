@@ -9,11 +9,13 @@ import java.util.Date;
 @AllArgsConstructor
 public class UpdateStudentInfoDTO {
 
-    private String names;
-    private String lastName;
-    private Date birthday;
-    private String dni;
-    private String address;
-    private String email;
-    private String phone;
+    private String newNames;
+    private String newLastName;
+    private Date newBirthday;
+    private String newDni;
+    private String newAddress;
+    private String newEmail;
+    private String newPhone;
+    private char newGrade;
+    private String newLevel;
 }
