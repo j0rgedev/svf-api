@@ -2,6 +2,7 @@ package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
+import com.integrador.svfapi.dto.getAllStudents.SingleStudentDTO;
 import com.integrador.svfapi.dto.getAllStudents.StudentListDTO;
 import com.integrador.svfapi.dto.studentInformation.EnrolledStudentDTO;
 import com.integrador.svfapi.dto.studentInformation.NotEnrolledStudent;
@@ -113,10 +114,27 @@ public class StudentServiceImpl implements StudentService {
 
         //Student student = studentRepository.findByStudentCod(studentCod);
         Optional<Student> student = studentRepository.findById(studentCod);
-                //.orElseThrow(new BusinessException(HttpStatus.NOT_FOUND, "Estudiante no encontrado"));
-
-        String msg = "Este es el resultado de la búsqueda";
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, student));
+        if(student.isPresent()){
+            SingleStudentDTO singleStudentDTO = new SingleStudentDTO(
+                    student.get().getStudentCod(),
+                    student.get().getNames(),
+                    student.get().getLastNames(),
+                    student.get().getBirthday(),
+                    student.get().getDni(),
+                    student.get().getAddress(),
+                    student.get().getEmail(),
+                    student.get().getPhone(),
+                    student.get().getCurrentLevel(),
+                    student.get().getCurrentGrade()
+            );
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    singleStudentDTO
+            ));
+        } else {
+            throw new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe");
+        }
     }
 
     @Override

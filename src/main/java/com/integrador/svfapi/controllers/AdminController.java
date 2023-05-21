@@ -16,7 +16,7 @@ public class AdminController {
 
     private final StudentServiceImpl studentServiceImpl;
 
-     @Autowired
+    @Autowired
     public AdminController(StudentServiceImpl studentServiceImpl) {
         this.studentServiceImpl = studentServiceImpl;
     }
@@ -25,7 +25,7 @@ public class AdminController {
     public ResponseEntity<?> getAllStudentsInformation(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
-        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.getAllStudents();
     }
@@ -35,7 +35,7 @@ public class AdminController {
             @RequestHeader("Authorization") @NotBlank String token,
             @RequestParam @NotBlank String studentCod
     ) {
-        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.getStudentById(studentCod);
     }
@@ -44,9 +44,9 @@ public class AdminController {
     public ResponseEntity<?> addStudent(
             @RequestHeader("Authorization") @NotBlank String token,
             @Validated @RequestBody AddStudentBodyDTO addStudentBodyDTO
-            ) {
+    ) {
         // Check if the token is valid
-        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.addStudent(token, addStudentBodyDTO);
     }
@@ -56,11 +56,11 @@ public class AdminController {
             @RequestHeader("Authorization") @NotBlank String token,
             @PathVariable String studentCod,
             @RequestBody UpdateStudentInfoDTO updateStudentInfo
-            ) {
+    ) {
         // Check if the token is valid
-        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.updateStudent(token, studentCod,updateStudentInfo);
+        return studentServiceImpl.updateStudent(token, studentCod, updateStudentInfo);
     }
 
     @PostMapping("/student/delete/{studentCod}") // Endpoint to delete a student
@@ -69,9 +69,8 @@ public class AdminController {
             @PathVariable String studentCod
     ) {
         // Check if the token is valid
-        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.deleteStudent(token, studentCod);
     }
-
 }
