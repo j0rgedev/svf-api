@@ -21,6 +21,25 @@ public class AdminController {
         this.studentServiceImpl = studentServiceImpl;
     }
 
+    @PostMapping("/students")
+    public ResponseEntity<?> getAllStudentsInformation(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.getAllStudents();
+    }
+
+    @PostMapping("/student")
+    public ResponseEntity<?> getStudentById(
+            @RequestHeader("Authorization") @NotBlank String token,
+            @RequestParam @NotBlank String studentCod
+    ) {
+        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.getStudentById(studentCod);
+    }
+
     @PostMapping("/student/add") // Endpoint to add student
     public ResponseEntity<?> addStudent(
             @RequestHeader("Authorization") @NotBlank String token,
