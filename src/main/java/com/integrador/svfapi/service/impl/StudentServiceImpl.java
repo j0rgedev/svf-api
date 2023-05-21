@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -52,6 +54,18 @@ public class StudentServiceImpl implements StudentService {
         this.passwordEncryption = passwordEncryption;
     }
 
+    /*
+     * FUNCIONES PARA EL CRUD DE ESTUDIANTES
+     */
+
+    /**
+     * Este método devuelve la información del estudiante a traves del studentCode que se obtiene a tráves del token.
+     * Si el estudiante esta matriculado, retornara un objeto EnrolledStudentDTO,
+     * de otra manera retornara un objeto StudentDTO.
+     *
+     * @param token Token de autenticación.
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> studentInformation(String token) {
         String studentCod = jwtUtil.extractUsername(token);
@@ -87,6 +101,12 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+    /**
+     * Este método se usa para obtener la información de todos los estudiantes excluyendo
+     * ciertos campos con informacion sensible como contraseñas, salt, entre otros.
+     *
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> getAllStudents() {
 
@@ -97,18 +117,32 @@ public class StudentServiceImpl implements StudentService {
             Optional<Enrollment> result = Optional.ofNullable(enrollmentRepository.findByStudentCod(student.getStudentCod()));
             boolean isEnrolled;
             isEnrolled = result.isPresent();
+            boolean isUserActive = userRepository.getReferenceById(student.getUser().getUserId()).isActive();
+            if (isUserActive) {
+                DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+                LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
+                DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yy-MM-dd");
+                String studentBirthday = originalDate.format(newFormat);
 
-            StudentListDTO studentDTO = new StudentListDTO(
-                    student.getStudentCod(),
-                    student.getNames() + " " + student.getLastNames(),
-                    student.getBirthday(), isEnrolled);
-            allStudentsDTO.add(studentDTO);
+                StudentListDTO studentListDTO = new StudentListDTO(
+                        student.getStudentCod(),
+                        student.getNames() + " " + student.getLastNames(),
+                        studentBirthday,
+                        isEnrolled);
+                allStudentsDTO.add(studentListDTO);
+            }
         }
-
         String msg = "Se envía la lista de estudiantes registrados en el sistema";
         return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, allStudentsDTO));
     }
 
+    /**
+     * Este método se usa para obtener la información de un unico estudiante usando
+     * el código del estudiante como parámetro de búsqueda.
+     *
+     * @param studentCod Código del estudiante
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> getStudentById(String studentCod) {
 
@@ -137,10 +171,22 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+    /**
+     * Este método se usa para agregar un nuevo registro de un estudiante a la base de datos.
+     * Para crear este registro se ingresa como parámetros el token y un objeto DTO que lleva
+     * tanto la informacion necesaria para el nuevo registro.
+     * El output de este método sera el código del estudiante con su nueva contraseña la cual
+     * tendrá el formato por default.
+     *
+     * @param token Token de autenticación.
+     * @param addStudentBodyDTO Objeto con la informacion tanto del estudiante como de su padre o apoderado
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> addStudent(String token, AddStudentBodyDTO addStudentBodyDTO) {
         String studentCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, studentCod)) {
+            //Creación del nuevo usuario
             User newUser = new User(
                     codeGenerator.generateNextUserId(userRepository.findTopByOrderByUserIdDesc().getUserId()),
                     true,
@@ -150,6 +196,7 @@ public class StudentServiceImpl implements StudentService {
                     addStudentBodyDTO.getStudentInfo().getNames(),
                     addStudentBodyDTO.getStudentInfo().getDni());
             String encryptedPassword = passwordEncryption.generateSecurePassword(defaultPassword, salt);
+            //Creación del nuevo estudiante
             Student newStudent = new Student(
                     codeGenerator.generateNextStudentCod(studentRepository.findTopByOrderByStudentCodDesc().getStudentCod()),
                     addStudentBodyDTO.getStudentInfo().getNames(),
@@ -166,7 +213,7 @@ public class StudentServiceImpl implements StudentService {
                     false,
                     newUser
             );
-
+            //Creación del nuevo padre o apoderado
             Representative newRepresentative = new Representative(
                     addStudentBodyDTO.getRepresentativeInfo().getDni(),
                     addStudentBodyDTO.getRepresentativeInfo().getNames(),
@@ -177,7 +224,7 @@ public class StudentServiceImpl implements StudentService {
                     addStudentBodyDTO.getRepresentativeInfo().getPhone(),
                     addStudentBodyDTO.getRepresentativeInfo().getOccupation()
             );
-
+            //Creación de la relación entre el estudiante y su apoderado
             StudentRepresentatives newStudentRepresentatives = new StudentRepresentatives(
                     newStudent,
                     newRepresentative,
@@ -200,10 +247,20 @@ public class StudentServiceImpl implements StudentService {
 
     }
 
+    /**
+     * La finalidad de este método es de actualizar la información del registro en la base de datos de un estudiante.
+     * Para ello se ingresan como parámetros el token, el código del estudiante y un objeto DTO.
+     *
+     * @param token Token de autenticación.
+     * @param studentCod Código del estudiante.
+     * @param updateStudentInfo Objeto DTO que lleva la información a actualizar del registro.
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> updateStudent(String token, String studentCod, UpdateStudentInfoDTO updateStudentInfo) {
         String userCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, userCod)) {
+            //Validación de la existencia del registro
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
@@ -227,10 +284,21 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+    /**
+     * La finalidad de este método es la de iniciar un proceso de eliminación de un registro
+     * de estudiante de la base de datos.
+     * El proceso inciará por cambiar el estado de usuario del estudiante a inactivo y se otorgara
+     * un plazo de 30 días para que la eliminación sea efectiva.
+     *
+     * @param token Token de autenticación.
+     * @param studentCod Código del estudiante.
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> deleteStudent(String token, String studentCod) {
         String userCod = jwtUtil.extractUsername(token);
         if (jwtUtil.validateToken(token, userCod)) {
+            //Validación del a existencia del registro
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
@@ -252,6 +320,14 @@ public class StudentServiceImpl implements StudentService {
     /*
         Functions for studentInformation
     */
+    /**
+     * Método interno usado para realizar los calculos del nuevo grado y nivel
+     * a los que pasaría un estudiante en su siguente año de matrícula.
+     *
+     * @param currentGrade Grado actual del estudiante
+     * @param currentLevel Nivel actual del estudiante
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     protected String[] calculateNewLevelAndGrade(char currentGrade, String currentLevel) {
 
         String[] newLevelAndGrade = new String[2];
