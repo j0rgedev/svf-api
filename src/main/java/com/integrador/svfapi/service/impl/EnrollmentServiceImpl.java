@@ -11,13 +11,15 @@ import com.integrador.svfapi.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnrollmentServiceIMPL implements EnrollmentService {
+@Service
+public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final JwtUtil jwtUtil;
     private final EnrollmentRepository enrollmentRepository;
@@ -27,7 +29,7 @@ public class EnrollmentServiceIMPL implements EnrollmentService {
     private final LevelCostsRepository levelCostsRepository;
 
     @Autowired
-    public EnrollmentServiceIMPL(
+    public EnrollmentServiceImpl(
             JwtUtil jwtUtil,
             EnrollmentRepository enrollmentRepository,
             EnrollmentDetailsRepository enrollmentDetailsRepository,
@@ -67,8 +69,9 @@ public class EnrollmentServiceIMPL implements EnrollmentService {
             amountsDTO.add(new LevelCostsDTO(levelCosts.getName(), levelCosts.getCost()));
         }
         response.setLevelCosts(amountsDTO);
+        String msg = "Se envian los datos de matricula del presente año escolar";
 
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), response));
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, response));
     }
 
     @Override
@@ -101,7 +104,8 @@ public class EnrollmentServiceIMPL implements EnrollmentService {
             enrollmentRepository.saveAndFlush(enrollment);
             enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
         }
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), newEnrollmentId));
+        String msg = "El Id de la nueva matrícula se ha generado correctamente";
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newEnrollmentId));
     }
 
     private String createEnrollmentId(String id){

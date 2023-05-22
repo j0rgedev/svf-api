@@ -11,17 +11,23 @@ import lombok.NoArgsConstructor;
 @Entity(name = "student_representatives")
 public class StudentRepresentatives {
 
-    @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_cod", referencedColumnName = "student_cod")
-    private Student student_cod;
+    private Student student;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "representatives_dni", referencedColumnName = "dni")
-	private Representatives representativesDni;
+	private Representative representative;
     @Column(
             name = "relation",
             nullable = false,
             columnDefinition = "TEXT"
     )
 	private String relation;
+    @Id
+    @Column(
+            name = "relation_code",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String relationCode;
 }

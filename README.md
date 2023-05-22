@@ -1,202 +1,56 @@
 # SVF API
+Documentación oficial de la API del colegio San Vicente Ferrer.
 
-API design for SVF Enrollment System
+## Tabla de contenidos
+A continuación se detallará como se debe consumir la API correctamente.
 
-## API Reference
+### Prerrequisitos
+Antes de empezar, se debe tener instalado lo siguiente:
+- JDK 17
+- IntelliJ IDEA
 
-## Base URL
-/api/v1/student/enrollment
+### Instalación
+Para poder ejecutar el proyecto, se debe seguir los siguientes pasos:
+1. Clonar el repositorio
+2. Abrir el proyecto en IntelliJ IDEA
+3. Dirigirse a la clase `SvfApiApplication.java` y ejecutarla
 
-### Login validation
-This endpoint is used to validate the student's login credentials.
+### URL de la API
+Debido a que esta API se encuentra en desarrollo, se debe utilizar la siguiente URL base para consumir los servicios por el momento:  
+**http://localhost:8080/api/v1/**
 
-```http
-POST /login
-```
+### Autenticación
+Para poder consumir los servicios de esta API, se debe autenticar mediante un token JWT. El token temporal tienen una duración de 5 minutos, y el token permanente tienen una duración de 1 día.
+- [Inicio de Sesión](docs/Login.md)
 
-`Body`
-```json
-{
-  "studentCod": "",
-  "password": ""
-}
-```
-
-`Response`
-```json
-{
-  "accessToken": ""
-}
-```
-
-`Response (default password)`
-```json
-{
-  "redirectUrl": ""
-}
-```
-
-### Validation by SMS
-This endpoint is used to verify a student's identity via SMS code.
-
-```http
-POST /smsvalidation 
-```
-
-`Params`
-```json
-{
-  "tempToken": ""
-}
-```
-
-`Body`
-```json
-{
-  "sms": ""
-}
-```
-
-`Response`
-```json
-{
-  "tempToken": ""
-}
-```
-
-### Update student password
-This endpoint is used to update the student's password.
-
-```http
-PUT /updatepassword/
-```
-`Header`
-```json
-{
-  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
-}
-```
-
-`Body`
-```json
-{
-  "password": ""
-}
-```
+En caso de los estudiantes, si tienen una contraseña por defecto, se les pedirá que la cambien por una nueva, pero primero deberán validar su identidad mediante un código que se les enviará a su número de celular.
+- [Validación por SMS](docs/SMSValidation.md)
+- [Actualización de contraseña](docs/UpdatePassword.md)
 
 
-`Response`
-```json
-{
-  "accessToken": ""
-}
-```
+### Endpoints
+Este proyecto tiene 3 páginas principales: la matrícula del alumno, la intranet del alumno y la intranet del administrador. Por lo tanto, los endpoints se dividen en 3 grupos para una mayor comprensión.
 
-### Student information
-This endpoint is used to retrieve the student information
+#### Matrícula
+Esta página es la que se encarga de la matrícula del alumno y cuenta con los siguientes endpoints:
+- [Información del estudiante](docs/StudentInfo.md)
+- [Detalles de la matrícula](docs/EnrollmentDetails.md)
+- [Proceso de la matrícula](docs/EnrollmentProcess.md)
 
-```http
-POST /
-```
-`Header`
-```json
-{
-  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
-}
-```
+### Intranet del administrador
+Esta página se encarga del CRUD de los estudiantes y toda la información relacionada con los pagos de pensiones y matrícula, y cuenta con los siguientes endpoints:
+- CRUD Estudiantes
+  - [Búsqueda general de estudiantes](docs/StudentSearch.md)
+  - [Búsqueda de estudiante por código](docs/StudentSearchByCode.md)
+  - [Lista de estudiantes](docs/StudentList.md)
+  - [Agregar estudiante](docs/AddStudent.md)
+  - [Actualizar estudiante](docs/UpdateStudent.md)
+  - [Eliminar estudiante](docs/DeleteStudent.md)
+- Analíticas y estadísticas
+  - En desarrollo
 
-`Response (not enrolled student)`
-```json
-{
-  "studentCod": "",
-  "names": "",
-  "lastNames": "",
-  "dni": "",
-  "newLevel": "",
-  "newGrade": ""
-}
-```
+### Intranet del alumno
+- En desarrollo
 
-
-`Response (enrolled student)`
-```json
-{
-  "studentCod": "",
-  "names": "",
-  "lastNames": "",
-  "enrollmentId": ""
-}
-```
-
-### Enrollment details
-This endpoint is used to retrieve the enrollment details.
-
-```http
-GET /details
-```
-
-`Response`
-```json
-{
-  "schoolYear": "",
-  "mainInfo": "",
-  "termDetails": [
-      {
-          "title": "",
-          "body": ""
-      },
-      {
-          "title": "",
-          "body": ""
-      },
-      {
-          "title": "",
-          "body": ""
-      }
-  ],
-  "levelCosts": [
-      {
-          "name": "",
-          "cost": ""
-      },
-      {
-          "name": "",
-          "cost": ""
-      },
-      {
-          "name": "",
-          "cost": ""
-      }
-  ]
-}
-```
-#### Enrollment process
-This endpoint is used to process the student's enrollment
-
-```http
-POST /process
-```
-
-`Header`
-```json
-{
-  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
-}
-```
-
-`Body`
-```json
-{
-  "totalAmount": "",
-  "date": "",
-  "level": {"levelId": "", "levelName": ""},
-  "paymentMethod": {"paymentId": "", "paymentType": ""}
-}
-```
-
-`Response`
-```json
-{
-  "enrollmentId": ""
-}
-```
+### Manejo de errores
+- En desarrollo

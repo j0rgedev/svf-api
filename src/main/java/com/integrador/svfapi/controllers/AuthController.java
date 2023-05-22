@@ -1,7 +1,7 @@
 package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.AuthDTO;
-import com.integrador.svfapi.service.impl.AuthServiceIMPL;
+import com.integrador.svfapi.service.impl.AuthServiceImpl;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/enrollment")
+@RequestMapping("/api/v1")
 public class AuthController {
 
-    private final AuthServiceIMPL authServiceIMPL;
+    private final AuthServiceImpl authServiceIMPL;
     @Autowired
-    public AuthController(AuthServiceIMPL authServiceIMPL) {
+    public AuthController(AuthServiceImpl authServiceIMPL) {
         this.authServiceIMPL = authServiceIMPL;
     }
 

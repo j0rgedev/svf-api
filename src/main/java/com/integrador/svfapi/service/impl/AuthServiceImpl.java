@@ -19,10 +19,11 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
-public class AuthServiceIMPL implements AuthService {
+public class AuthServiceImpl implements AuthService {
 
     private final JwtUtil jwtUtil;
     private final TwilioSMS twilioSMS;
@@ -32,7 +33,7 @@ public class AuthServiceIMPL implements AuthService {
     private final AESEncryption aesEncryption;
 
     @Autowired
-    public AuthServiceIMPL(
+    public AuthServiceImpl(
             JwtUtil jwtUtil,
             TwilioSMS twilioSMS,
             StudentRepository studentRepository,
@@ -50,26 +51,29 @@ public class AuthServiceIMPL implements AuthService {
 
     @Override
     public ResponseEntity<ResponseFormat> login(AuthDTO authDTO) {
-        String studentCode = authDTO.getStudentCod();
-        Student student = studentRepository.getReferenceById(studentCode);
-        boolean isDefaultPassword = checkPasswordDefaultFormat(studentCode);
+        String studentCod = authDTO.getStudentCod();
+        Student student = studentRepository.getReferenceById(studentCod);
+
+        boolean isDefaultPassword = checkPasswordDefaultFormat(studentCod);
 
         if (checkCredentials(authDTO)) {
             if (isDefaultPassword) {
-                String token = jwtUtil.generateToken(studentCode, 5 * 60 * 1000); // 5 minutes
+                String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
                 String smsCode = String.valueOf(generateRandomNumber());
                 String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
-                saveSms(studentCode, smsCode);
+                saveSms(studentCod, smsCode);
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
                 twilioSMS.sendMessage(studentPhoneNumber, smsCode);
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), redirectUrl));
+                String msg = "El usuario posee una contraseña con el formato default";
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, redirectUrl));
             } else {
-                String accessToken = jwtUtil.generateToken(studentCode, 24 * 60 * 60 * 1000); // 24 hours
+                String accessToken = jwtUtil.generateToken(studentCod, 24 * 60 * 60 * 1000); // 24 hours
                 if (accessToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), accessToken));
+                String msg = "Las credenciales ingresadas por el usuario son autenticas";
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, accessToken));
             }
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
@@ -87,7 +91,8 @@ public class AuthServiceIMPL implements AuthService {
                 if (tempToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), tempToken));
+                String msg = "La validación por SMS se realizado correctamente";
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, tempToken));
             } else {
                 throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid sms code");
             }
@@ -96,6 +101,12 @@ public class AuthServiceIMPL implements AuthService {
         }
     }
 
+    /**
+     * Este método se encarga de actualizar la contraseña de los usuarios que poseen una contraseña con el formato default.
+     * @param token Token de autenticación
+     * @param password Nueva contraseña
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> updatePassword(String token, String password) {
         String studentCod = jwtUtil.extractUsername(token);
@@ -109,7 +120,8 @@ public class AuthServiceIMPL implements AuthService {
             if (newAccessToken == null) {
                 throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
             }
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), newAccessToken));
+            String msg = "La contraseña se ha actualizado correctamente";
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newAccessToken));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }

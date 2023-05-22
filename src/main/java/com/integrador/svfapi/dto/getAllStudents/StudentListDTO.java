@@ -19,7 +19,7 @@ public class StudentListDTO {
     private String fullName;
     @NotNull
     @NotBlank
-    private Date birthday;
+    private String birthday;
     @NotNull
     @NotBlank
     private boolean isEnrolled;
