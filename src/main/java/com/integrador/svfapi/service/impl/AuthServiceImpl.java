@@ -101,6 +101,12 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Este método se encarga de actualizar la contraseña de los usuarios que poseen una contraseña con el formato default.
+     * @param token Token de autenticación
+     * @param password Nueva contraseña
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> updatePassword(String token, String password) {
         String studentCod = jwtUtil.extractUsername(token);

@@ -121,7 +121,7 @@ public class StudentServiceImpl implements StudentService {
             if (isUserActive) {
                 DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
                 LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
-                DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yy-MM-dd");
+                DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 String studentBirthday = originalDate.format(newFormat);
 
                 StudentListDTO studentListDTO = new StudentListDTO(
