@@ -110,15 +110,10 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public ResponseEntity<ResponseFormat> getAllStudents() {
 
-        List<Student> allStudents = studentRepository.findAll();
+        List<Student> allStudents = studentRepository.findActiveStudents();
         List<StudentListDTO> allStudentsDTO = new ArrayList<>();
 
         for (Student student: allStudents) {
-            Optional<Enrollment> result = Optional.ofNullable(enrollmentRepository.findByStudentCod(student.getStudentCod()));
-            boolean isEnrolled;
-            isEnrolled = result.isPresent();
-            boolean isUserActive = userRepository.getReferenceById(student.getUser().getUserId()).isActive();
-            if (isUserActive) {
                 DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
                 LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
                 DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -128,9 +123,9 @@ public class StudentServiceImpl implements StudentService {
                         student.getStudentCod(),
                         student.getNames() + " " + student.getLastNames(),
                         studentBirthday,
-                        isEnrolled);
+                        student.isEnrolled());
                 allStudentsDTO.add(studentListDTO);
-            }
+
         }
         String msg = "Se envía la lista de estudiantes registrados en el sistema";
         return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, allStudentsDTO));
@@ -168,6 +163,42 @@ public class StudentServiceImpl implements StudentService {
             ));
         } else {
             throw new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ResponseFormat> getStudentByQuery(String token, String query) {
+        String userCod = jwtUtil.extractUsername(token);
+        if (jwtUtil.validateToken(token, userCod)) {
+            if (query.startsWith("SVF")){
+                return getStudentById(query);
+            } else {
+                Optional<Student> student = Optional.ofNullable(studentRepository.findStudentByLastNames(query));
+                if (student.isPresent()){
+                    SingleStudentDTO singleStudentDTO = new SingleStudentDTO(
+                            student.get().getStudentCod(),
+                            student.get().getNames(),
+                            student.get().getLastNames(),
+                            student.get().getBirthday(),
+                            student.get().getDni(),
+                            student.get().getAddress(),
+                            student.get().getEmail(),
+                            student.get().getPhone(),
+                            student.get().getCurrentLevel(),
+                            student.get().getCurrentGrade()
+                    );
+                    return ResponseEntity.ok().body(new ResponseFormat(
+                            HttpStatus.OK.value(),
+                            HttpStatus.OK.getReasonPhrase(),
+                            singleStudentDTO
+                    ));
+                } else {
+                    throw new BusinessException(HttpStatus.NOT_FOUND, "User not found");
+                }
+            }
+
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
     }
 

@@ -40,6 +40,16 @@ public class AdminController {
         return studentServiceImpl.getStudentById(studentCod);
     }
 
+    @PostMapping("/student/{query}")
+    public ResponseEntity<?> getStudentByQuery(
+            @RequestHeader("Authorization") @NotBlank String token,
+            @PathVariable @NotBlank String query
+    ) {
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.getStudentByQuery(token, query);
+    }
+
     @PostMapping("/student/add") // Endpoint to add student
     public ResponseEntity<?> addStudent(
             @RequestHeader("Authorization") @NotBlank String token,
