@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -105,7 +106,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
         }
         String msg = "El Id de la nueva matrícula se ha generado correctamente";
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newEnrollmentId));
+        HashMap<String, String> data = new HashMap<>();
+        data.put("enrollmentId", newEnrollmentId);
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
     }
 
     private String createEnrollmentId(String id){

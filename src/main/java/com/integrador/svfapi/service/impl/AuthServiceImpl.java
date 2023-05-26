@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -60,20 +62,26 @@ public class AuthServiceImpl implements AuthService {
             if (isDefaultPassword) {
                 String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
                 String smsCode = String.valueOf(generateRandomNumber());
-                String redirectUrl = "/matricula/validacion-sms/?tempToken=" + token;
+                String redirectUrl = "/matricula/validacion/?tempToken=" + token;
                 saveSms(studentCod, smsCode);
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
                 twilioSMS.sendMessage(studentPhoneNumber, smsCode);
                 String msg = "El usuario posee una contraseña con el formato default";
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, redirectUrl));
+                HashMap<String, String> data = new HashMap<>();
+                data.put("redirectUrl", redirectUrl);
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
             } else {
                 String accessToken = jwtUtil.generateToken(studentCod, 24 * 60 * 60 * 1000); // 24 hours
                 if (accessToken == null) {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
-                String msg = "Las credenciales ingresadas por el usuario son autenticas";
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, accessToken));
+                HashMap<String, String> data = new HashMap<>();
+                data.put("accessToken", accessToken);
+                return ResponseEntity.ok().body(new ResponseFormat(
+                        HttpStatus.OK.value(),
+                        HttpStatus.OK.getReasonPhrase(),
+                        data));
             }
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
@@ -92,7 +100,9 @@ public class AuthServiceImpl implements AuthService {
                     throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
                 }
                 String msg = "La validación por SMS se realizado correctamente";
-                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, tempToken));
+                HashMap<String, String> data = new HashMap<>();
+                data.put("tempToken", tempToken);
+                return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
             } else {
                 throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid sms code");
             }
@@ -121,7 +131,9 @@ public class AuthServiceImpl implements AuthService {
                 throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
             }
             String msg = "La contraseña se ha actualizado correctamente";
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newAccessToken));
+            HashMap<String, String> data = new HashMap<>();
+            data.put("accessToken", newAccessToken);
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
