@@ -27,7 +27,7 @@ public class AdminController {
     ) {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.getAllStudents();
+        return studentServiceImpl.getAllStudents(token);
     }
 
     @PostMapping("/student")
@@ -37,7 +37,7 @@ public class AdminController {
     ) {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.getStudentById(studentCod);
+        return studentServiceImpl.getStudentById(token, studentCod);
     }
 
     @PostMapping("/student/{query}")
@@ -82,5 +82,15 @@ public class AdminController {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.deleteStudent(token, studentCod);
+    }
+
+    @PostMapping("/dashboard")
+    public ResponseEntity<?> dashboardGraphics(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.dashboardGraphics();
     }
 }

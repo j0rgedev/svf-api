@@ -24,6 +24,9 @@ public class StudentInfoDTO {
     private Date birthdate;
     @NotNull
     @NotBlank
+    private char gender;
+    @NotNull
+    @NotBlank
     private String direction;
     @NotNull
     @NotBlank

@@ -1,17 +1,16 @@
 package com.integrador.svfapi.service.impl;
 
+import com.integrador.svfapi.classes.Admin;
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Sms;
 import com.integrador.svfapi.classes.Student;
 import com.integrador.svfapi.dto.AuthDTO;
 import com.integrador.svfapi.exception.BusinessException;
+import com.integrador.svfapi.repository.AdminRepository;
 import com.integrador.svfapi.repository.SmsRepository;
 import com.integrador.svfapi.repository.StudentRepository;
 import com.integrador.svfapi.service.AuthService;
-import com.integrador.svfapi.utils.AESEncryption;
-import com.integrador.svfapi.utils.JwtUtil;
-import com.integrador.svfapi.utils.PasswordEncryption;
-import com.integrador.svfapi.utils.TwilioSMS;
+import com.integrador.svfapi.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +19,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -30,6 +27,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final TwilioSMS twilioSMS;
     private final StudentRepository studentRepository;
+    private final AdminRepository adminRepository;
     private final SmsRepository smsRepository;
     private final PasswordEncryption passwordEncryption;
     private final AESEncryption aesEncryption;
@@ -39,13 +37,14 @@ public class AuthServiceImpl implements AuthService {
             JwtUtil jwtUtil,
             TwilioSMS twilioSMS,
             StudentRepository studentRepository,
-            SmsRepository smsRepository,
+            AdminRepository adminRepository, SmsRepository smsRepository,
             PasswordEncryption passwordEncryption,
             AESEncryption aesEncryption
     ) {
         this.jwtUtil = jwtUtil;
         this.twilioSMS = twilioSMS;
         this.studentRepository = studentRepository;
+        this.adminRepository = adminRepository;
         this.smsRepository = smsRepository;
         this.passwordEncryption = passwordEncryption;
         this.aesEncryption = aesEncryption;
@@ -53,12 +52,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<ResponseFormat> login(AuthDTO authDTO) {
-        String studentCod = authDTO.getStudentCod();
-        Student student = studentRepository.getReferenceById(studentCod);
-
-        boolean isDefaultPassword = checkPasswordDefaultFormat(studentCod);
-
-        if (checkCredentials(authDTO)) {
+        String userCode = authDTO.getUserCode();
+        if (CodeValidator.isStudentCode(userCode) && checkCredentials(authDTO)) {
+            Student student = studentRepository.getReferenceById(userCode);
+            String studentCod = student.getStudentCod();
+            boolean isDefaultPassword = checkPasswordDefaultFormat(studentCod);
             if (isDefaultPassword) {
                 String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
                 String smsCode = String.valueOf(generateRandomNumber());
@@ -83,6 +81,17 @@ public class AuthServiceImpl implements AuthService {
                         HttpStatus.OK.getReasonPhrase(),
                         data));
             }
+        } else if (CodeValidator.isAdminCode(userCode) && checkCredentials(authDTO)) {
+            String accessToken = jwtUtil.generateToken(authDTO.getUserCode(), 24 * 60 * 60 * 1000); // 24 hours
+            if (accessToken == null) {
+                throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating token");
+            }
+            HashMap<String, String> data = new HashMap<>();
+            data.put("accessToken", accessToken);
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    data));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
         }
@@ -90,8 +99,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<ResponseFormat> validateSMS(String accessToken, String sms) {
-        String studentCod = jwtUtil.extractUsername(accessToken);
-        if(jwtUtil.validateToken(accessToken, studentCod)) {
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(accessToken);
+        if(tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            String studentCod =tokenValidationResult.code();
             String smsCode = getSmsCode(studentCod);
             if (smsCode.equals(sms)) {
                 deleteSmsCode(studentCod);
@@ -119,8 +129,9 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public ResponseEntity<ResponseFormat> updatePassword(String token, String password) {
-        String studentCod = jwtUtil.extractUsername(token);
-        if (jwtUtil.validateToken(token, studentCod)) {
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            String studentCod = tokenValidationResult.code();
             Student student = studentRepository.getReferenceById(studentCod);
             String salt = student.getSalt();
             String hashedPassword = passwordEncryption.generateSecurePassword(password, salt);
@@ -146,12 +157,24 @@ public class AuthServiceImpl implements AuthService {
         return new Random().nextInt(90000)+10000; // 5 digits
     }
     private boolean checkCredentials(AuthDTO authDTO) {
-        Student student = studentRepository.getReferenceById(authDTO.getStudentCod());
-        String studentPassword = student.getPassword();
-        String studentSalt = student.getSalt();
         String providedPassword = authDTO.getPassword();
+        String userPassword = "";
+        String userSalt = "" ;
+        if (CodeValidator.isStudentCode(authDTO.getUserCode())) {
+            Student student= studentRepository.findById(authDTO.getUserCode())
+                    .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Estudiante no econtrado"));
+            userPassword = student.getPassword();
+            userSalt = student.getSalt();
+        }
 
-        if (!passwordEncryption.verifyUserPassword(providedPassword, studentPassword, studentSalt)) {
+        if (CodeValidator.isAdminCode(authDTO.getUserCode())) {
+            Admin admin = adminRepository.findById(authDTO.getUserCode())
+                    .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Administrador no encontrado"));
+            userPassword = admin.getPassword();
+            userSalt = admin.getSalt();
+        }
+
+        if (!passwordEncryption.verifyUserPassword(providedPassword, userPassword, userSalt)) {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
         } else {
             return true;

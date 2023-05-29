@@ -56,6 +56,12 @@ public class Student {
     )
     private String dni;
     @Column(
+            name = "gender",
+            nullable = false,
+            columnDefinition = "char(1)"
+    )
+    private char gender;
+    @Column(
             name = "direction",
             nullable = false,
             columnDefinition = "TEXT"
