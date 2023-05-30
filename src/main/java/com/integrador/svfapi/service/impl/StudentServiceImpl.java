@@ -385,6 +385,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     public ResponseEntity<ResponseFormat> secondGraphic(){
+
+        // Conteo de alumnos por genero
         List<Student> studentList = studentRepository.findActiveStudents();
         List<Student> enrolledStudentList = studentList.stream().filter(Student::isEnrolled).toList();
         int totalStudents = enrolledStudentList.size();
@@ -392,6 +394,7 @@ public class StudentServiceImpl implements StudentService {
         int girls = totalStudents - boys;
         EnrolledByGenderDTO enrolledByGenderDTO = new EnrolledByGenderDTO(boys, girls, totalStudents);
 
+        // Conteo de matriculas por año
         List<EnrollmentCountByYearAndLevel> enrollmentCountByYearAndLevelList = studentRepository.getEnrollmentCountByYearAndLevel();
         Map<Integer, List<LevelCount>> enrollmentByYear = new HashMap<>();
         for (EnrollmentCountByYearAndLevel countByYearAndLevel: enrollmentCountByYearAndLevelList) {
@@ -408,7 +411,78 @@ public class StudentServiceImpl implements StudentService {
             }
         }
 
-        return null;
+        // Conteo de matriculas por nivel y grado
+        List<Student> enrolledStudents = studentRepository.findByIsEnrolled(true);
+
+        int[] inicialCounts = new int[3];
+        String firstLevel = "Primaria";
+
+        for (int i = 0; i < inicialCounts.length; i++) {
+            char grade = Character.forDigit(i + 1, 10);
+            inicialCounts[i] = countByLevelAndGrade(enrolledStudents, firstLevel, grade);
+        }
+
+        int[] primariaCounts = new int[6];
+        String secondLevel = "Primaria";
+
+        for (int i = 0; i < primariaCounts.length; i++) {
+            char grade = Character.forDigit(i + 1, 10);
+            primariaCounts[i] = countByLevelAndGrade(enrolledStudents, secondLevel, grade);
+        }
+
+        int[] secundariaCounts = new int[5];
+        String thirdLevel = "Secundaria";
+
+        for (int i = 0; i < secundariaCounts.length; i++) {
+            char grade = Character.forDigit(i + 1, 10);
+            secundariaCounts[i] = countByLevelAndGrade(enrolledStudents, thirdLevel, grade);
+        }
+
+        Map<String, Map<String, Integer>> enrollmentByLevelAndGrade = new HashMap<>();
+
+        // Crear los niveles y grados iniciales
+        Map<String, Integer> inicialGrades = new HashMap<>();
+        // Agregar los grados de Inicial
+        inicialGrades.put("3", inicialCounts[0]);
+        inicialGrades.put("4", inicialCounts[1]);
+        inicialGrades.put("5", inicialCounts[2]);
+
+        enrollmentByLevelAndGrade.put("Inicial", inicialGrades);
+
+        Map<String, Integer> primariaGrades = new HashMap<>();
+        // Agregar los grados de Primaria
+        primariaGrades.put("1", primariaCounts[0]);
+        primariaGrades.put("2", primariaCounts[1]);
+        primariaGrades.put("3", primariaCounts[2]);
+        primariaGrades.put("4", primariaCounts[3]);
+        primariaGrades.put("5", primariaCounts[4]);
+        primariaGrades.put("6", primariaCounts[5]);
+
+        enrollmentByLevelAndGrade.put("Primaria", primariaGrades);
+
+        Map<String, Integer> secundariaGrades = new HashMap<>();
+        // Agregar los grados de Secundaria
+        secundariaGrades.put("1", secundariaCounts[0]);
+        secundariaGrades.put("2", secundariaCounts[1]);
+        secundariaGrades.put("3", secundariaCounts[2]);
+        secundariaGrades.put("4", secundariaCounts[3]);
+        secundariaGrades.put("5", secundariaCounts[4]);
+
+        enrollmentByLevelAndGrade.put("Secundaria", secundariaGrades);
+
+        // Creación de la data
+        Map<String, Object> data = new HashMap<>();
+        data.put("enrolledStudents", enrolledByGenderDTO);
+        data.put("enrollmentByYear", enrollmentByYear);
+        data.put("enrollmentByLevelAndGrade", enrollmentByLevelAndGrade);
+
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "OK", data));
+    }
+
+    private int countByLevelAndGrade(List<Student> studentList, String level, char grade) {
+        return (int) studentList.stream()
+                .filter(student -> student.getCurrentLevel().equals(level) && student.getCurrentGrade() == grade)
+                .count();
     }
 
     /*

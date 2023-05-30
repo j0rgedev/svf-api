@@ -93,4 +93,14 @@ public class AdminController {
         token = token.replace("Bearer ", "");
         return studentServiceImpl.dashboardGraphics();
     }
+
+    @PostMapping("/dashboard2")
+    public ResponseEntity<?> dashboardGraphics2(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.secondGraphic();
+    }
 }

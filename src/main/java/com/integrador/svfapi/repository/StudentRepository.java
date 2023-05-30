@@ -33,4 +33,6 @@ public interface StudentRepository extends JpaRepository<Student, String> {
                     "WHERE s.is_enrolled = true " +
                     "GROUP BY YEAR(ed.date), s.current_level;", nativeQuery = true)
     List<EnrollmentCountByYearAndLevel> getEnrollmentCountByYearAndLevel();
+
+    List<Student> findByIsEnrolled(boolean isEnrolled);
 }
