@@ -175,7 +175,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (!passwordEncryption.verifyUserPassword(providedPassword, userPassword, userSalt)) {
-            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Login failed");
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Credenciales Inválidas" );
         } else {
             return true;
         }

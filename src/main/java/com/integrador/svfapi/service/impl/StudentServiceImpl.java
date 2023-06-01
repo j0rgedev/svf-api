@@ -386,7 +386,7 @@ public class StudentServiceImpl implements StudentService {
 
     public ResponseEntity<ResponseFormat> secondGraphic(){
 
-        // Conteo de alumnos por genero
+//        // Conteo de alumnos por genero
         List<Student> studentList = studentRepository.findActiveStudents();
         List<Student> enrolledStudentList = studentList.stream().filter(Student::isEnrolled).toList();
         int totalStudents = enrolledStudentList.size();
@@ -398,19 +398,19 @@ public class StudentServiceImpl implements StudentService {
         List<EnrollmentCountByYearAndLevel> enrollmentCountByYearAndLevelList = studentRepository.getEnrollmentCountByYearAndLevel();
         Map<Integer, List<LevelCount>> enrollmentByYear = new HashMap<>();
         for (EnrollmentCountByYearAndLevel countByYearAndLevel: enrollmentCountByYearAndLevelList) {
-            int year = countByYearAndLevel.year();
+            int year = countByYearAndLevel.getYear();
             Optional<List<LevelCount>> result = Optional.ofNullable(enrollmentByYear.get(year));
             if (result.isPresent()) {
                 List<LevelCount> levelCounts = result.get();
-                levelCounts.add(new LevelCount(countByYearAndLevel.currentLevel(), (int)countByYearAndLevel.count()));
+                levelCounts.add(new LevelCount(countByYearAndLevel.getCurrentLevel(), (int)countByYearAndLevel.getCount()));
                 enrollmentByYear.put(year, levelCounts);
             } else {
                 List<LevelCount> levelCounts = new ArrayList<>();
-                levelCounts.add(new LevelCount(countByYearAndLevel.currentLevel(), (int)countByYearAndLevel.count()));
+                levelCounts.add(new LevelCount(countByYearAndLevel.getCurrentLevel(), (int)countByYearAndLevel.getCount()));
                 enrollmentByYear.put(year, levelCounts);
             }
         }
-
+//
         // Conteo de matriculas por nivel y grado
         List<Student> enrolledStudents = studentRepository.findByIsEnrolled(true);
 
