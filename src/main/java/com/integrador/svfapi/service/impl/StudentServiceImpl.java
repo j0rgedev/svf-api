@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -120,15 +122,10 @@ public class StudentServiceImpl implements StudentService {
             List<StudentListDTO> allStudentsDTO = new ArrayList<>();
 
             for (Student student: allStudents) {
-                DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-                LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
-                DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                String studentBirthday = originalDate.format(newFormat);
-
                 StudentListDTO studentListDTO = new StudentListDTO(
                         student.getStudentCod(),
                         student.getNames() + " " + student.getLastNames(),
-                        studentBirthday,
+                        student.getBirthday(),
                         student.isEnrolled());
                 allStudentsDTO.add(studentListDTO);
 
@@ -310,8 +307,6 @@ public class StudentServiceImpl implements StudentService {
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
-                foundStudent.setNames(updateStudentInfo.getNewNames());
-                foundStudent.setLastNames(updateStudentInfo.getNewLastNames());
                 foundStudent.setBirthday(updateStudentInfo.getNewBirthday());
                 foundStudent.setDni(updateStudentInfo.getNewDni());
                 foundStudent.setAddress(updateStudentInfo.getNewAddress());

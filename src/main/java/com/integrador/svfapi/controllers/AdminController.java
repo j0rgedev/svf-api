@@ -65,7 +65,7 @@ public class AdminController {
     public ResponseEntity<?> updateStudent(
             @RequestHeader("Authorization") @NotBlank String token,
             @PathVariable String studentCod,
-            @RequestBody UpdateStudentInfoDTO updateStudentInfo
+            @Validated @RequestBody UpdateStudentInfoDTO updateStudentInfo
     ) {
         // Check if the token is valid
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

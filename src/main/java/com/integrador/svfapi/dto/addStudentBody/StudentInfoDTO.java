@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -21,7 +22,7 @@ public class StudentInfoDTO {
     private String dni;
     @NotNull
     @NotBlank
-    private Date birthdate;
+    private LocalDate birthdate;
     @NotNull
     @NotBlank
     private char gender;

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -19,7 +20,7 @@ public class StudentListDTO {
     private String fullName;
     @NotNull
     @NotBlank
-    private String birthday;
+    private LocalDate birthday;
     @NotNull
     @NotBlank
     private boolean isEnrolled;
