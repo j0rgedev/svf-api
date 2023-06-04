@@ -281,9 +281,19 @@ public class StudentServiceImpl implements StudentService {
             studentRepository.save(newStudent);
             representativesRepository.save(newRepresentative);
             studentRepresentativesRepository.save(newStudentRepresentatives);
-            String msg = "El registro se realizo correctamente";
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
-
+            try {
+                jMail.sendMail(
+                        newStudent.getEmail(),
+                        "Bienvenido a la familia SVF",
+                        "Su código de estudiante es: " + newStudent.getStudentCod() + "\nSu contraseña es: " + defaultPassword);
+                data.put("emailStatus", "Correo enviado");
+            } catch (Exception e) {
+                data.put("emailStatus", "Correo no enviado");
+            }
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    data));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
@@ -307,8 +317,6 @@ public class StudentServiceImpl implements StudentService {
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
-                foundStudent.setNames(updateStudentInfo.getNewNames());
-                foundStudent.setLastNames(updateStudentInfo.getNewLastNames());
                 foundStudent.setBirthday(updateStudentInfo.getNewBirthday());
                 foundStudent.setDni(updateStudentInfo.getNewDni());
                 foundStudent.setAddress(updateStudentInfo.getNewAddress());
@@ -515,22 +523,4 @@ public class StudentServiceImpl implements StudentService {
         }
         return newLevelAndGrade;
     }
-
-    public ResponseEntity<ResponseFormat> sendMail() {
-        jMail.sendMail( "yabapex820@pyadu.com",
-                                "Mensaje de Prueba",
-                            "No responder a este mensaje");
-
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "Mensaje enviado", null));
-    }
-
-    private String dateCommonFormat (Student student) {
-        DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-        LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
-        DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        return originalDate.format(newFormat);
-
-    }
-
 }

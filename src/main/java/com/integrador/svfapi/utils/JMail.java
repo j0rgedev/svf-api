@@ -1,6 +1,10 @@
 package com.integrador.svfapi.utils;
 
+import com.integrador.svfapi.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -10,6 +14,8 @@ public class JMail {
 
     @Autowired
     private JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    private String sender;
     public void sendMail(
             String mailDestination,
             String title,
@@ -18,14 +24,10 @@ public class JMail {
 
         SimpleMailMessage email = new SimpleMailMessage();
 
-        //email.setTo("wolf3976@gmail.com");
         email.setTo(mailDestination);
-        email.setFrom("U17206511@utp.edu.pe");
-        //email.setSubject("Mensaje de Prueba 1");
+        email.setFrom(sender);
         email.setSubject(title);
-        //email.setText("No responder esto es una prueba");
         email.setText(msgBody);
-
         mailSender.send(email);
     }
 
