@@ -47,7 +47,9 @@ Esta página se encarga del CRUD de los estudiantes y toda la información relac
   - [Actualizar estudiante](docs/UpdateStudent.md)
   - [Eliminar estudiante](docs/DeleteStudent.md)
 - Analíticas y estadísticas
-  - En desarrollo
+  - [Estadísticas principales](docs/Statistics.md)
+  - [Estadísticas de matrícula](docs/EnrollmentStatistics.md)
+  - Estadísticas de pensiones (En desarrollo)
 
 ### Intranet del alumno
 - En desarrollo
