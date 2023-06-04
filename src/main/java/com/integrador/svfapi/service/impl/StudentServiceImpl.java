@@ -17,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,6 +25,7 @@ import java.util.*;
 public class StudentServiceImpl implements StudentService {
 
     private final JwtUtil jwtUtil;
+    private final JMail jMail;
     private final StudentRepository studentRepository;
     private final RepresentativesRepository representativesRepository;
     private final StudentRepresentativesRepository studentRepresentativesRepository;
@@ -38,7 +37,7 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     public StudentServiceImpl(
             JwtUtil jwtUtil,
-            StudentRepository studentRepository,
+            JMail jMail, StudentRepository studentRepository,
             RepresentativesRepository representativesRepository,
             StudentRepresentativesRepository studentRepresentativesRepository,
             EnrollmentRepository enrollmentRepository,
@@ -46,6 +45,7 @@ public class StudentServiceImpl implements StudentService {
             CodeGenerator codeGenerator,
             PasswordEncryption passwordEncryption) {
         this.jwtUtil = jwtUtil;
+        this.jMail = jMail;
         this.studentRepository = studentRepository;
         this.representativesRepository = representativesRepository;
         this.studentRepresentativesRepository = studentRepresentativesRepository;
@@ -307,6 +307,8 @@ public class StudentServiceImpl implements StudentService {
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
+                foundStudent.setNames(updateStudentInfo.getNewNames());
+                foundStudent.setLastNames(updateStudentInfo.getNewLastNames());
                 foundStudent.setBirthday(updateStudentInfo.getNewBirthday());
                 foundStudent.setDni(updateStudentInfo.getNewDni());
                 foundStudent.setAddress(updateStudentInfo.getNewAddress());
@@ -514,5 +516,21 @@ public class StudentServiceImpl implements StudentService {
         return newLevelAndGrade;
     }
 
+    public ResponseEntity<ResponseFormat> sendMail() {
+        jMail.sendMail( "yabapex820@pyadu.com",
+                                "Mensaje de Prueba",
+                            "No responder a este mensaje");
+
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "Mensaje enviado", null));
+    }
+
+    private String dateCommonFormat (Student student) {
+        DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+        LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
+        DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return originalDate.format(newFormat);
+
+    }
 
 }

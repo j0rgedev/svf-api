@@ -8,6 +8,7 @@ import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.EnrollmentService;
+import com.integrador.svfapi.utils.JMail;
 import com.integrador.svfapi.utils.JwtUtil;
 import com.integrador.svfapi.utils.TokenType;
 import com.integrador.svfapi.utils.TokenValidationResult;
@@ -34,8 +35,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Autowired
     public EnrollmentServiceImpl(
-            JwtUtil jwtUtil,
-            EnrollmentRepository enrollmentRepository,
+            JwtUtil jwtUtil, EnrollmentRepository enrollmentRepository,
             EnrollmentDetailsRepository enrollmentDetailsRepository,
             TermsAndConditionsRepository termsAndConditionsRepository,
             TermsDetailsRepository termsDetailsRepository,
@@ -113,6 +113,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             String msg = "El Id de la nueva matrícula se ha generado correctamente";
             HashMap<String, String> data = new HashMap<>();
             data.put("enrollmentId", newEnrollmentId);
+
+
             return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
