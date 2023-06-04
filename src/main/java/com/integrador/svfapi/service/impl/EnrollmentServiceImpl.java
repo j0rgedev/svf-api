@@ -5,9 +5,13 @@ import com.integrador.svfapi.dto.enrollmentDetailsResponse.EnrollmentDetailsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.LevelCostsDTO;
 import com.integrador.svfapi.dto.enrollmentDetailsResponse.TermDetailsDTO;
 import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
+import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.EnrollmentService;
+import com.integrador.svfapi.utils.JMail;
 import com.integrador.svfapi.utils.JwtUtil;
+import com.integrador.svfapi.utils.TokenType;
+import com.integrador.svfapi.utils.TokenValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -30,8 +35,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Autowired
     public EnrollmentServiceImpl(
-            JwtUtil jwtUtil,
-            EnrollmentRepository enrollmentRepository,
+            JwtUtil jwtUtil, EnrollmentRepository enrollmentRepository,
             EnrollmentDetailsRepository enrollmentDetailsRepository,
             TermsAndConditionsRepository termsAndConditionsRepository,
             TermsDetailsRepository termsDetailsRepository,
@@ -76,36 +80,46 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public ResponseEntity<ResponseFormat> enrollmentProcess(String token, EnrollmentDTO enrollmentDTO) {
-        String studentCod = jwtUtil.extractUsername(token);
-        String newEnrollmentId;
-        LocalDate today = LocalDate.now();
-        int year = today.getYear();
-        String thisYearId = "T" + year;
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            String studentCod = tokenValidationResult.code();
+            String newEnrollmentId;
+            LocalDate today = LocalDate.now();
+            int year = today.getYear();
+            String thisYearId = "T" + year;
 
-        Enrollment foundEnrollment = enrollmentRepository.findByStudentCodAndTermsConditionsId(studentCod, thisYearId);
-        if (foundEnrollment != null) {
-            newEnrollmentId = foundEnrollment.getEnrollmentId();
+            Enrollment foundEnrollment = enrollmentRepository.findByStudentCodAndTermsConditionsId(studentCod, thisYearId);
+            if (foundEnrollment != null) {
+                newEnrollmentId = foundEnrollment.getEnrollmentId();
+            } else {
+                String lastEnrollmentId = enrollmentRepository.findTopByOrderByEnrollmentIdDesc().getEnrollmentId();
+                newEnrollmentId = createEnrollmentId(lastEnrollmentId);
+
+                Enrollment enrollment = new Enrollment();
+                enrollment.setEnrollmentId(newEnrollmentId);
+                enrollment.setStudentCod(studentCod);
+                enrollment.setPaymentId(enrollmentDTO.getPaymentMethod().getPaymentId());
+                enrollment.setStatus(true);
+                enrollment.setTermsConditionsId(thisYearId);
+
+                EnrollmentDetails enrollmentDetails = new EnrollmentDetails();
+                enrollmentDetails.setEnrollmentId(newEnrollmentId);
+                enrollmentDetails.setDate(enrollmentDTO.getDate());
+                enrollmentDetails.setTotalAmount(enrollmentDTO.getTotalAmount());
+
+                enrollmentRepository.saveAndFlush(enrollment);
+                enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
+            }
+            String msg = "El Id de la nueva matrícula se ha generado correctamente";
+            HashMap<String, String> data = new HashMap<>();
+            data.put("enrollmentId", newEnrollmentId);
+
+
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
         } else {
-            String lastEnrollmentId = enrollmentRepository.findTopByOrderByEnrollmentIdDesc().getEnrollmentId();
-            newEnrollmentId = createEnrollmentId(lastEnrollmentId);
-
-            Enrollment enrollment = new Enrollment();
-            enrollment.setEnrollmentId(newEnrollmentId);
-            enrollment.setStudentCod(studentCod);
-            enrollment.setPaymentId(enrollmentDTO.getPaymentMethod().getPaymentId());
-            enrollment.setStatus(true);
-            enrollment.setTermsConditionsId(thisYearId);
-
-            EnrollmentDetails enrollmentDetails = new EnrollmentDetails();
-            enrollmentDetails.setEnrollmentId(newEnrollmentId);
-            enrollmentDetails.setDate(enrollmentDTO.getDate());
-            enrollmentDetails.setTotalAmount(enrollmentDTO.getTotalAmount());
-
-            enrollmentRepository.saveAndFlush(enrollment);
-            enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
-        String msg = "El Id de la nueva matrícula se ha generado correctamente";
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, newEnrollmentId));
+
     }
 
     private String createEnrollmentId(String id){

@@ -1,7 +1,6 @@
 package com.integrador.svfapi.utils;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +19,11 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-
-    public String generateToken(String studentCod, long tokenDuration) {
+    public String generateToken(String code, long tokenDuration) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("code", code);
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(studentCod)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + tokenDuration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -37,13 +35,21 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public boolean validateToken(String token, String studentCod) {
-        final String username = extractUsername(token);
-        return (username.equals(studentCod) && !isTokenExpired(token));
-    }
-
-    public String extractUsername(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody().getSubject();
+    public TokenValidationResult validateToken(String token) {
+        try {
+            Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
+            String code = (String) claims.getBody().get("code");
+            if (!isTokenExpired(token)) {
+                if (CodeValidator.isAdminCode(code)) {
+                    return new TokenValidationResult(true, code, TokenType.ADMIN);
+                } else if (CodeValidator.isStudentCode(code)) {
+                    return new TokenValidationResult(true, code, TokenType.STUDENT);
+                }
+            }
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new JwtException("Token inválido");
+        }
+        return new TokenValidationResult(false, null, null);
     }
 
     public boolean isTokenExpired(String token) {
@@ -55,4 +61,5 @@ public class JwtUtil {
         return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody().getExpiration();
     }
 }
+
 

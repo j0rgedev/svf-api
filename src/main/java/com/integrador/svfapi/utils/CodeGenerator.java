@@ -1,9 +1,4 @@
 package com.integrador.svfapi.utils;
-
-import com.integrador.svfapi.repository.StudentRepository;
-import com.integrador.svfapi.repository.StudentRepresentativesRepository;
-import com.integrador.svfapi.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,11 +10,6 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 public class CodeGenerator {
-
-    private DecimalFormat decimalFormat;
-    private UserRepository userRepository;
-    private StudentRepository studentRepository;
-    private StudentRepresentativesRepository studentRepresentativesRepository;
 
     public String generateNextUserId(String lastUserId) {
         // Obtener el último ID registrado en la base de datos

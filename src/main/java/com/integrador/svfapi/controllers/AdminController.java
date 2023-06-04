@@ -27,7 +27,7 @@ public class AdminController {
     ) {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.getAllStudents();
+        return studentServiceImpl.getAllStudents(token);
     }
 
     @PostMapping("/student")
@@ -37,7 +37,17 @@ public class AdminController {
     ) {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.getStudentById(studentCod);
+        return studentServiceImpl.getStudentById(token, studentCod);
+    }
+
+    @PostMapping("/student/{query}")
+    public ResponseEntity<?> getStudentByQuery(
+            @RequestHeader("Authorization") @NotBlank String token,
+            @PathVariable @NotBlank String query
+    ) {
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.getStudentByQuery(token, query);
     }
 
     @PostMapping("/student/add") // Endpoint to add student
@@ -55,7 +65,7 @@ public class AdminController {
     public ResponseEntity<?> updateStudent(
             @RequestHeader("Authorization") @NotBlank String token,
             @PathVariable String studentCod,
-            @RequestBody UpdateStudentInfoDTO updateStudentInfo
+            @Validated @RequestBody UpdateStudentInfoDTO updateStudentInfo
     ) {
         // Check if the token is valid
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -72,5 +82,25 @@ public class AdminController {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.deleteStudent(token, studentCod);
+    }
+
+    @PostMapping("/dashboard")
+    public ResponseEntity<?> dashboardGraphics(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.dashboardGraphics();
+    }
+
+    @PostMapping("/dashboard2")
+    public ResponseEntity<?> dashboardGraphics2(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.secondGraphic();
     }
 }

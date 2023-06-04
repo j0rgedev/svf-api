@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -36,7 +37,7 @@ public class Student {
             nullable = false,
             columnDefinition = "DATE"
     )
-    private Date birthday;
+    private LocalDate birthday;
     @Column(
             name = "password",
             nullable = false,
@@ -55,6 +56,12 @@ public class Student {
             columnDefinition = "TEXT"
     )
     private String dni;
+    @Column(
+            name = "gender",
+            nullable = false,
+            columnDefinition = "char(1)"
+    )
+    private char gender;
     @Column(
             name = "direction",
             nullable = false,

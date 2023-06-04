@@ -10,7 +10,7 @@ import lombok.Data;
 public class AuthDTO {
     @NotNull
     @NotBlank
-    private String studentCod;
+    private String userCode;
     @NotNull
     @NotBlank
     private String password;
