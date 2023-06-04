@@ -11,7 +11,7 @@ public class SingleStudentDTO {
     private String studentCod;
     private String names;
     private String lastNames;
-    private Date birthday;
+    private String birthday;
     private String dni;
     private String address;
     private String email;

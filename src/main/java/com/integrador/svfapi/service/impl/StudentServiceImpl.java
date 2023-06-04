@@ -25,6 +25,7 @@ import java.util.*;
 public class StudentServiceImpl implements StudentService {
 
     private final JwtUtil jwtUtil;
+    private final JMail jMail;
     private final StudentRepository studentRepository;
     private final RepresentativesRepository representativesRepository;
     private final StudentRepresentativesRepository studentRepresentativesRepository;
@@ -36,7 +37,7 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     public StudentServiceImpl(
             JwtUtil jwtUtil,
-            StudentRepository studentRepository,
+            JMail jMail, StudentRepository studentRepository,
             RepresentativesRepository representativesRepository,
             StudentRepresentativesRepository studentRepresentativesRepository,
             EnrollmentRepository enrollmentRepository,
@@ -44,6 +45,7 @@ public class StudentServiceImpl implements StudentService {
             CodeGenerator codeGenerator,
             PasswordEncryption passwordEncryption) {
         this.jwtUtil = jwtUtil;
+        this.jMail = jMail;
         this.studentRepository = studentRepository;
         this.representativesRepository = representativesRepository;
         this.studentRepresentativesRepository = studentRepresentativesRepository;
@@ -120,15 +122,11 @@ public class StudentServiceImpl implements StudentService {
             List<StudentListDTO> allStudentsDTO = new ArrayList<>();
 
             for (Student student: allStudents) {
-                DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-                LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
-                DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                String studentBirthday = originalDate.format(newFormat);
 
                 StudentListDTO studentListDTO = new StudentListDTO(
                         student.getStudentCod(),
                         student.getNames() + " " + student.getLastNames(),
-                        studentBirthday,
+                        dateCommonFormat(student),
                         student.isEnrolled());
                 allStudentsDTO.add(studentListDTO);
 
@@ -154,11 +152,14 @@ public class StudentServiceImpl implements StudentService {
         if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.ADMIN)) {
             Optional<Student> student = studentRepository.findById(studentCod);
             if(student.isPresent()){
+
+
+
                 SingleStudentDTO singleStudentDTO = new SingleStudentDTO(
                         student.get().getStudentCod(),
                         student.get().getNames(),
                         student.get().getLastNames(),
-                        student.get().getBirthday(),
+                        dateCommonFormat(student.get()),
                         student.get().getDni(),
                         student.get().getAddress(),
                         student.get().getEmail(),
@@ -193,7 +194,7 @@ public class StudentServiceImpl implements StudentService {
                             student.get().getStudentCod(),
                             student.get().getNames(),
                             student.get().getLastNames(),
-                            student.get().getBirthday(),
+                            dateCommonFormat(student.get()),
                             student.get().getDni(),
                             student.get().getAddress(),
                             student.get().getEmail(),
@@ -284,6 +285,14 @@ public class StudentServiceImpl implements StudentService {
             studentRepository.save(newStudent);
             representativesRepository.save(newRepresentative);
             studentRepresentativesRepository.save(newStudentRepresentatives);
+
+            String mailDestination = newStudent.getEmail();
+            String title = "Datos para el login en matricula";
+            String msgBody =    "Codigo de estudiante: " + newStudent.getStudentCod()+ "\n " +
+                                "Contraseña: " + defaultPassword;
+
+            jMail.sendMail(mailDestination, title, msgBody);
+
             String msg = "El registro se realizo correctamente";
             return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
 
@@ -519,5 +528,21 @@ public class StudentServiceImpl implements StudentService {
         return newLevelAndGrade;
     }
 
+    public ResponseEntity<ResponseFormat> sendMail() {
+        jMail.sendMail( "yabapex820@pyadu.com",
+                                "Mensaje de Prueba",
+                            "No responder a este mensaje");
+
+        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "Mensaje enviado", null));
+    }
+
+    private String dateCommonFormat (Student student) {
+        DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+        LocalDate originalDate = LocalDate.parse(student.getBirthday().toString(), originalFormat);
+        DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return originalDate.format(newFormat);
+
+    }
 
 }

@@ -103,4 +103,11 @@ public class AdminController {
         token = token.replace("Bearer ", "");
         return studentServiceImpl.secondGraphic();
     }
+
+    @PostMapping("/sendMail")
+    public ResponseEntity<?> sendMail(
+    ) {
+        return studentServiceImpl.sendMail();
+    }
+
 }
