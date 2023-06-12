@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,6 +38,18 @@ public class Enrollment {
             columnDefinition = "BOOLEAN"
     )
     boolean status;
+    @Column(
+            name = "date",
+            nullable = false,
+            columnDefinition = "DATE"
+    )
+    LocalDate date;
+    @Column(
+            name = "amount",
+            nullable = false,
+            columnDefinition = "DECIMAL(5,2)"
+    )
+    double amount;
     @Column(
             name = "terms_conditions_id",
             nullable = false,
