@@ -2,8 +2,10 @@ package com.integrador.svfapi.controllers;
 
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.updateStudentBody.UpdateStudentInfoDTO;
+import com.integrador.svfapi.service.impl.StatisticsServiceImpl;
 import com.integrador.svfapi.service.impl.StudentServiceImpl;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final StudentServiceImpl studentServiceImpl;
+    private final StatisticsServiceImpl statisticsServiceImpl;
 
     @Autowired
-    public AdminController(StudentServiceImpl studentServiceImpl) {
+    public AdminController(StudentServiceImpl studentServiceImpl, StatisticsServiceImpl statisticsServiceImpl) {
         this.studentServiceImpl = studentServiceImpl;
+        this.statisticsServiceImpl = statisticsServiceImpl;
     }
 
     @PostMapping("/students")
@@ -38,16 +42,6 @@ public class AdminController {
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
         return studentServiceImpl.getStudentById(token, studentCod);
-    }
-
-    @PostMapping("/student/{query}")
-    public ResponseEntity<?> getStudentByQuery(
-            @RequestHeader("Authorization") @NotBlank String token,
-            @PathVariable @NotBlank String query
-    ) {
-        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        token = token.replace("Bearer ", "");
-        return studentServiceImpl.getStudentByQuery(token, query);
     }
 
     @PostMapping("/student/add") // Endpoint to add student
@@ -84,23 +78,45 @@ public class AdminController {
         return studentServiceImpl.deleteStudent(token, studentCod);
     }
 
-    @PostMapping("/dashboard")
-    public ResponseEntity<?> dashboardGraphics(
+    @PostMapping("/general-dashboard")
+    public ResponseEntity<?> generalDashboard(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
         // Check if the token is valid
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.dashboardGraphics();
+        return statisticsServiceImpl.getGeneralStatistics(token);
     }
 
-    @PostMapping("/dashboard2")
-    public ResponseEntity<?> dashboardGraphics2(
+    @PostMapping("/enrollment-dashboard")
+    public ResponseEntity<?> enrollmentDashboard(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
         // Check if the token is valid
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.secondGraphic();
+        return statisticsServiceImpl.getEnrollmentStatistics(token);
+    }
+
+    @PostMapping("/pension-dashboard")
+    public ResponseEntity<?> pensionDashboard(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return statisticsServiceImpl.getPensionStatistics(token);
+    }
+
+    @PostMapping("/total-debt/{monthNumber}")
+    @Validated
+    public ResponseEntity<?> totalDebt(
+            @RequestHeader("Authorization") @NotBlank String token,
+            @PathVariable("monthNumber") @Size(min = 3, max = 12, message = "El mes debe estar entre 3 y 12") int monthNumber
+            ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return statisticsServiceImpl.getTotalDebt(token, monthNumber);
     }
 }

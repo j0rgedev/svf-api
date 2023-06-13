@@ -12,7 +12,6 @@ public interface StudentService {
     // CRUD for Students
     ResponseEntity<ResponseFormat> getAllStudents(String token);
     ResponseEntity<ResponseFormat> getStudentById(String token, String studentCod);
-    ResponseEntity<ResponseFormat> getStudentByQuery(String token, String query);
     ResponseEntity<ResponseFormat> addStudent(String token, AddStudentBodyDTO addStudentBodyDTO);
     ResponseEntity<ResponseFormat> updateStudent(String token, String studentCod, UpdateStudentInfoDTO updateStudentInfoDTO);
     ResponseEntity<ResponseFormat> deleteStudent(String token, String studentCod);

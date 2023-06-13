@@ -182,42 +182,6 @@ public class StudentServiceImpl implements StudentService {
 
     }
 
-    @Override
-    public ResponseEntity<ResponseFormat> getStudentByQuery(String token, String query) {
-        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
-        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.ADMIN)) {
-            if (query.startsWith("SVF")){
-                return getStudentById(token, query);
-            } else {
-                Optional<Student> student = Optional.ofNullable(studentRepository.findStudentByLastNames(query));
-                if (student.isPresent()){
-                    SingleStudentDTO singleStudentDTO = new SingleStudentDTO(
-                            student.get().getStudentCod(),
-                            student.get().getNames(),
-                            student.get().getLastNames(),
-                            student.get().getBirthday(),
-                            student.get().getDni(),
-                            student.get().getAddress(),
-                            student.get().getEmail(),
-                            student.get().getPhone(),
-                            student.get().getCurrentLevel(),
-                            student.get().getCurrentGrade()
-                    );
-                    return ResponseEntity.ok().body(new ResponseFormat(
-                            HttpStatus.OK.value(),
-                            HttpStatus.OK.getReasonPhrase(),
-                            singleStudentDTO
-                    ));
-                } else {
-                    throw new BusinessException(HttpStatus.NOT_FOUND, "User not found");
-                }
-            }
-
-        } else {
-            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
-    }
-
     /**
      * Este método se usa para agregar un nuevo registro de un estudiante a la base de datos.
      * Para crear este registro se ingresa como parámetros el token y un objeto DTO que lleva
@@ -372,6 +336,13 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+
+    /**
+     *  Método que permite obtener todas las pensiones de un estudiante.
+     *
+     * @param token Token de autenticación.
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
     @Override
     public ResponseEntity<ResponseFormat> studentPensions(String token){
         TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
@@ -420,6 +391,8 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+
+    // Función que permite crear las pensiones de un estudiante
     private void createStudentPensions(String studentCod){
         LocalDate[] due_dates = {
                 LocalDate.of(2023, 3, 6),
@@ -449,129 +422,6 @@ public class StudentServiceImpl implements StudentService {
             studentPension.setStudent(student);
             pensionRepository.save(studentPension);
         }
-    }
-
-    public ResponseEntity<ResponseFormat> dashboardGraphics(){
-        List<Student> lastFiveStudent = studentRepository.getLastFiveEnrolledStudents();
-        List<LastFiveStudentsDTO> lastFiveStudentsDTO = new ArrayList<>();
-        for (Student student : lastFiveStudent) {
-            lastFiveStudentsDTO.add(new LastFiveStudentsDTO(
-                    student.getStudentCod(),
-                    student.getNames() + " " + student.getLastNames(),
-                    student.getCurrentLevel()));
-        }
-
-        List<Student> studentList = studentRepository.findActiveStudents();
-        int totalStudents = studentList.size();
-        int enrolled = (int)studentList.stream().filter(Student::isEnrolled).count();
-        int notEnrolled = totalStudents - enrolled;
-        EnrollmentCountDTO enrollmentCountDTO = new EnrollmentCountDTO(totalStudents, enrolled, notEnrolled);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("lastFiveEnrolledStudents", lastFiveStudentsDTO);
-        data.put("EnrollmentInformation", enrollmentCountDTO);
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "OK", data));
-    }
-
-    public ResponseEntity<ResponseFormat> secondGraphic(){
-
-//        // Conteo de alumnos por genero
-        List<Student> studentList = studentRepository.findActiveStudents();
-        List<Student> enrolledStudentList = studentList.stream().filter(Student::isEnrolled).toList();
-        int totalStudents = enrolledStudentList.size();
-        int boys = (int) enrolledStudentList.stream().filter(student -> student.getGender() == 'M').count();
-        int girls = totalStudents - boys;
-        EnrolledByGenderDTO enrolledByGenderDTO = new EnrolledByGenderDTO(boys, girls, totalStudents);
-
-        // Conteo de matriculas por año
-        List<EnrollmentCountByYearAndLevel> enrollmentCountByYearAndLevelList = studentRepository.getEnrollmentCountByYearAndLevel();
-        Map<Integer, List<LevelCount>> enrollmentByYear = new HashMap<>();
-        for (EnrollmentCountByYearAndLevel countByYearAndLevel: enrollmentCountByYearAndLevelList) {
-            int year = countByYearAndLevel.getYear();
-            Optional<List<LevelCount>> result = Optional.ofNullable(enrollmentByYear.get(year));
-            if (result.isPresent()) {
-                List<LevelCount> levelCounts = result.get();
-                levelCounts.add(new LevelCount(countByYearAndLevel.getCurrentLevel(), (int)countByYearAndLevel.getCount()));
-                enrollmentByYear.put(year, levelCounts);
-            } else {
-                List<LevelCount> levelCounts = new ArrayList<>();
-                levelCounts.add(new LevelCount(countByYearAndLevel.getCurrentLevel(), (int)countByYearAndLevel.getCount()));
-                enrollmentByYear.put(year, levelCounts);
-            }
-        }
-//
-        // Conteo de matriculas por nivel y grado
-        List<Student> enrolledStudents = studentRepository.findByIsEnrolled(true);
-
-        int[] inicialCounts = new int[3];
-        String firstLevel = "Primaria";
-
-        for (int i = 0; i < inicialCounts.length; i++) {
-            char grade = Character.forDigit(i + 1, 10);
-            inicialCounts[i] = countByLevelAndGrade(enrolledStudents, firstLevel, grade);
-        }
-
-        int[] primariaCounts = new int[6];
-        String secondLevel = "Primaria";
-
-        for (int i = 0; i < primariaCounts.length; i++) {
-            char grade = Character.forDigit(i + 1, 10);
-            primariaCounts[i] = countByLevelAndGrade(enrolledStudents, secondLevel, grade);
-        }
-
-        int[] secundariaCounts = new int[5];
-        String thirdLevel = "Secundaria";
-
-        for (int i = 0; i < secundariaCounts.length; i++) {
-            char grade = Character.forDigit(i + 1, 10);
-            secundariaCounts[i] = countByLevelAndGrade(enrolledStudents, thirdLevel, grade);
-        }
-
-        Map<String, Map<String, Integer>> enrollmentByLevelAndGrade = new HashMap<>();
-
-        // Crear los niveles y grados iniciales
-        Map<String, Integer> inicialGrades = new HashMap<>();
-        // Agregar los grados de Inicial
-        inicialGrades.put("3", inicialCounts[0]);
-        inicialGrades.put("4", inicialCounts[1]);
-        inicialGrades.put("5", inicialCounts[2]);
-
-        enrollmentByLevelAndGrade.put("Inicial", inicialGrades);
-
-        Map<String, Integer> primariaGrades = new HashMap<>();
-        // Agregar los grados de Primaria
-        primariaGrades.put("1", primariaCounts[0]);
-        primariaGrades.put("2", primariaCounts[1]);
-        primariaGrades.put("3", primariaCounts[2]);
-        primariaGrades.put("4", primariaCounts[3]);
-        primariaGrades.put("5", primariaCounts[4]);
-        primariaGrades.put("6", primariaCounts[5]);
-
-        enrollmentByLevelAndGrade.put("Primaria", primariaGrades);
-
-        Map<String, Integer> secundariaGrades = new HashMap<>();
-        // Agregar los grados de Secundaria
-        secundariaGrades.put("1", secundariaCounts[0]);
-        secundariaGrades.put("2", secundariaCounts[1]);
-        secundariaGrades.put("3", secundariaCounts[2]);
-        secundariaGrades.put("4", secundariaCounts[3]);
-        secundariaGrades.put("5", secundariaCounts[4]);
-
-        enrollmentByLevelAndGrade.put("Secundaria", secundariaGrades);
-
-        // Creación de la data
-        Map<String, Object> data = new HashMap<>();
-        data.put("enrolledStudents", enrolledByGenderDTO);
-        data.put("enrollmentByYear", enrollmentByYear);
-        data.put("enrollmentByLevelAndGrade", enrollmentByLevelAndGrade);
-
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "OK", data));
-    }
-
-    private int countByLevelAndGrade(List<Student> studentList, String level, char grade) {
-        return (int) studentList.stream()
-                .filter(student -> student.getCurrentLevel().equals(level) && student.getCurrentGrade() == grade)
-                .count();
     }
 
     /*
