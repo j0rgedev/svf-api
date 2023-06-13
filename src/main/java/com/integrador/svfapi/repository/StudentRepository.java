@@ -20,18 +20,16 @@ public interface StudentRepository extends JpaRepository<Student, String> {
                     "FROM student s " +
                     "INNER JOIN user u ON s.user_id = u.user_id " +
                     "INNER JOIN enrollment e ON s.student_cod = e.student_cod " +
-                    "INNER JOIN enrollment_details ed ON e.enrollment_id = ed.enrollment_id " +
                     "WHERE u.is_active = true " +
-                    "ORDER BY ed.date DESC " +
+                    "ORDER BY e.date DESC " +
                     "LIMIT 5", nativeQuery = true)
     List<Student> getLastFiveEnrolledStudents();
 
-    @Query(value =  "SELECT YEAR(ed.date) AS year, s.current_level AS currentLevel, COUNT(*) AS count " +
+    @Query(value =  "SELECT YEAR(e.date) AS year, s.current_level AS currentLevel, COUNT(*) AS count " +
                     "FROM student s " +
                     "INNER JOIN enrollment e ON s.student_cod = e.student_cod " +
-                    "INNER JOIN enrollment_details ed ON e.enrollment_id = ed.enrollment_id " +
                     "WHERE s.is_enrolled = true " +
-                    "GROUP BY YEAR(ed.date), s.current_level ", nativeQuery = true)
+                    "GROUP BY YEAR(e.date), s.current_level ", nativeQuery = true)
     List<EnrollmentCountByYearAndLevel> getEnrollmentCountByYearAndLevel();
 
     List<Student> findByIsEnrolled(boolean isEnrolled);

@@ -1,6 +1,7 @@
 package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
+import com.integrador.svfapi.dto.StudentPensionDTO;
 import com.integrador.svfapi.dto.dashboardDTO.*;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.getAllStudents.SingleStudentDTO;
@@ -18,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -30,6 +31,7 @@ public class StudentServiceImpl implements StudentService {
     private final RepresentativesRepository representativesRepository;
     private final StudentRepresentativesRepository studentRepresentativesRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PensionRepository pensionRepository;
     private final UserRepository userRepository;
     private final CodeGenerator codeGenerator;
     private final PasswordEncryption passwordEncryption;
@@ -37,10 +39,12 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     public StudentServiceImpl(
             JwtUtil jwtUtil,
-            JMail jMail, StudentRepository studentRepository,
+            JMail jMail,
+            StudentRepository studentRepository,
             RepresentativesRepository representativesRepository,
             StudentRepresentativesRepository studentRepresentativesRepository,
             EnrollmentRepository enrollmentRepository,
+            PensionRepository pensionRepository,
             UserRepository userRepository,
             CodeGenerator codeGenerator,
             PasswordEncryption passwordEncryption) {
@@ -50,6 +54,7 @@ public class StudentServiceImpl implements StudentService {
         this.representativesRepository = representativesRepository;
         this.studentRepresentativesRepository = studentRepresentativesRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.pensionRepository = pensionRepository;
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncryption = passwordEncryption;
@@ -349,7 +354,7 @@ public class StudentServiceImpl implements StudentService {
     public ResponseEntity<ResponseFormat> deleteStudent(String token, String studentCod) {
         TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
         if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.ADMIN)) {
-            //Validación del a existencia del registro
+            //Validación de la existencia del registro
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
@@ -364,6 +369,85 @@ public class StudentServiceImpl implements StudentService {
             }
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ResponseFormat> studentPensions(String token){
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            String[] pensionNames = {
+                    "Pensión de marzo",
+                    "Pensión de abril",
+                    "Pensión de mayo",
+                    "Pensión de junio",
+                    "Pensión de julio",
+                    "Pensión de agosto",
+                    "Pensión de septiembre",
+                    "Pensión de octubre",
+                    "Pensión de noviembre",
+                    "Pensión de diciembre"
+            };
+            Student student = studentRepository.findByStudentCod(tokenValidationResult.code());
+            List<Pension> studentPensions = pensionRepository.findAllByStudent(student);
+            List<StudentPensionDTO> studentPensionDTOList = new ArrayList<>();
+            LocalDate currentDate = LocalDate.now();
+            int i = -1; String status = "";
+            for (Pension pension : studentPensions) {
+                i++;
+                if(pension.getDue_date().isBefore(currentDate)){
+                    status = "Vencido";
+                } else {
+                    status = "Pendiente";
+                }
+                StudentPensionDTO studentPensionDTO = new StudentPensionDTO(
+                        pension.getPension_cod(),
+                        pensionNames[i],
+                        pension.getAmount(),
+                        pension.getDue_date(),
+                        status
+                );
+                studentPensionDTOList.add(studentPensionDTO);
+            }
+
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    studentPensionDTOList
+            ));
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+    }
+
+    private void createStudentPensions(String studentCod){
+        LocalDate[] due_dates = {
+                LocalDate.of(2023, 3, 6),
+                LocalDate.of(2023, 4, 6),
+                LocalDate.of(2023, 5, 6),
+                LocalDate.of(2023, 6, 6),
+                LocalDate.of(2023, 7, 6),
+                LocalDate.of(2023, 8, 6),
+                LocalDate.of(2023, 9, 6),
+                LocalDate.of(2023, 10, 6),
+                LocalDate.of(2023, 11, 6),
+                LocalDate.of(2023, 12, 6)
+        };
+        Map<String, Double> pensionByLevel = new HashMap<>();
+        pensionByLevel.put("Inicial", 300.00);
+        pensionByLevel.put("Primaria", 350.00);
+        pensionByLevel.put("Secundaria", 400.00);
+
+        Student student = studentRepository.findById(studentCod)
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe"));
+
+        for (LocalDate dueDate : due_dates) {
+            Pension studentPension = new Pension();
+            studentPension.setDue_date(dueDate);
+            studentPension.setAmount(pensionByLevel.get(student.getCurrentLevel()));
+            studentPension.setStatus(false);
+            studentPension.setStudent(student);
+            pensionRepository.save(studentPension);
         }
     }
 
