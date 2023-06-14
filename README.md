@@ -49,10 +49,12 @@ Esta página se encarga del CRUD de los estudiantes y toda la información relac
 - Analíticas y estadísticas
   - [Estadísticas principales](docs/Statistics.md)
   - [Estadísticas de matrícula](docs/EnrollmentStatistics.md)
-  - Estadísticas de pensiones (En desarrollo)
+  - [Estadísticas de pensiones](docs/PensionStatistics.md)
+  - [Estadísticas de deuda por mes](docs/DebtStatistics.md)
 
 ### Intranet del alumno
-- En desarrollo
+Esta página se encarga de mostrar toda la información relacionada con el alumno, y cuenta con los siguientes endpoints:
+- [Pensiones del estudiante](docs/StudentPensions.md)
 
 ### Manejo de errores
 - En desarrollo
