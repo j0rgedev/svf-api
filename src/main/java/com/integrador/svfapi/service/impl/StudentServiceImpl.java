@@ -2,7 +2,6 @@ package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
 import com.integrador.svfapi.dto.StudentPensionDTO;
-import com.integrador.svfapi.dto.dashboardDTO.*;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.getAllStudents.SingleStudentDTO;
 import com.integrador.svfapi.dto.getAllStudents.StudentListDTO;
@@ -13,13 +12,13 @@ import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.StudentService;
 import com.integrador.svfapi.utils.*;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -337,6 +336,31 @@ public class StudentServiceImpl implements StudentService {
     }
 
 
+    @Override
+    public ResponseEntity<ResponseFormat> getStudent(String token){
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            Student student = studentRepository.findById(tokenValidationResult.code())
+                    .orElseThrow(()-> new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe"));
+
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    new StudentInformation(
+                            student.getNames(),
+                            student.getLastNames()
+                    )
+            ));
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+    }
+
+    private record StudentInformation(
+            String studentName,
+            String studentLastName
+    ){}
+
     /**
      *  Método que permite obtener todas las pensiones de un estudiante.
      *
@@ -344,7 +368,7 @@ public class StudentServiceImpl implements StudentService {
      * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
      */
     @Override
-    public ResponseEntity<ResponseFormat> studentPensions(String token){
+    public ResponseEntity<ResponseFormat> studentPensions(String token) {
         TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
         if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
             String[] pensionNames = {
@@ -361,36 +385,56 @@ public class StudentServiceImpl implements StudentService {
             };
             Student student = studentRepository.findByStudentCod(tokenValidationResult.code());
             List<Pension> studentPensions = pensionRepository.findAllByStudent(student);
-            List<StudentPensionDTO> studentPensionDTOList = new ArrayList<>();
+
+            if(studentPensions.isEmpty()) return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    new StudentPensionDTO(
+                            0,
+                            new ArrayList<>()
+                    )
+            ));
+
+            List<PensionDTO> pensionDTOList = new ArrayList<>();
             LocalDate currentDate = LocalDate.now();
-            int i = -1; String status = "";
-            for (Pension pension : studentPensions) {
-                i++;
-                if(pension.getDue_date().isBefore(currentDate)){
-                    status = "Vencido";
-                } else {
-                    status = "Pendiente";
-                }
-                StudentPensionDTO studentPensionDTO = new StudentPensionDTO(
+            double totalDebt = 0;
+
+            for (int i = 0; i < studentPensions.size(); i++) {
+                Pension pension = studentPensions.get(i);
+                boolean isPaid = pension.isStatus();
+                totalDebt += isPaid ? pension.getAmount() : 0;
+                String status = pension.getDue_date().isBefore(currentDate) ? "Vencido" : "Pendiente";
+
+                PensionDTO pensionDTO = new PensionDTO(
                         pension.getPension_cod(),
                         pensionNames[i],
                         pension.getAmount(),
                         pension.getDue_date(),
                         status
                 );
-                studentPensionDTOList.add(studentPensionDTO);
+                pensionDTOList.add(pensionDTO);
             }
 
             return ResponseEntity.ok().body(new ResponseFormat(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
-                    studentPensionDTOList
+                    new StudentPensionDTO(
+                            totalDebt,
+                            Collections.singletonList(pensionDTOList)
+                    )
             ));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
     }
 
+    private record PensionDTO(
+            int pensionCod,
+            String pensionName,
+            Double pensionAmount,
+            LocalDate dueDate,
+            String status
+    ){ }
 
     // Función que permite crear las pensiones de un estudiante
     private void createStudentPensions(String studentCod){

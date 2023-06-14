@@ -1,12 +1,10 @@
 package com.integrador.svfapi.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record StudentPensionDTO(
-        int pensionCode,
-        String pensionName,
-        double pensionAmount,
-        LocalDate pensionDueDate,
-        String pensionStatus
+        double totalDebt,
+        List<Object> pensions
 ) {
 }

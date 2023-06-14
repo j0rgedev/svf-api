@@ -17,4 +17,6 @@ public interface StudentService {
     ResponseEntity<ResponseFormat> deleteStudent(String token, String studentCod);
     // Student pensions
     ResponseEntity<ResponseFormat> studentPensions(String token);
+
+    ResponseEntity<?> getStudent(String token);
 }

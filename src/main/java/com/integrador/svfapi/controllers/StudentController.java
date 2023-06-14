@@ -18,22 +18,20 @@ public class StudentController {
     }
 
     /*
-    * ENROLLMENT PROCESS ENDPOINTS
+    * INTRANET ENDPOINTS
     * */
-    @PostMapping("/enrollment-info") // Endpoint for student information
-    public ResponseEntity<?> studentInformation(
+    @PostMapping("/")
+    public ResponseEntity<?> getStudent(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
         // Check if the token is valid
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.studentInformation(token);
+        return studentServiceImpl.getStudent(token);
     }
 
 
-    /*
-    * INTRANET ENDPOINTS
-    * */
+
     @PostMapping("/pensions") // Endpoint for student pensions
     public ResponseEntity<?> studentPensions(
             @RequestHeader("Authorization") @NotBlank String token
