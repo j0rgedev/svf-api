@@ -402,7 +402,7 @@ public class StudentServiceImpl implements StudentService {
             for (int i = 0; i < studentPensions.size(); i++) {
                 Pension pension = studentPensions.get(i);
                 boolean isPaid = pension.isStatus();
-                totalDebt += isPaid ? pension.getAmount() : 0;
+                totalDebt += !isPaid ? pension.getAmount() : 0;
                 String status = pension.getDue_date().isBefore(currentDate) ? "Vencido" : "Pendiente";
 
                 PensionDTO pensionDTO = new PensionDTO(
