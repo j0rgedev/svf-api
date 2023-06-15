@@ -8,7 +8,6 @@ import com.integrador.svfapi.repository.PensionRepository;
 import com.integrador.svfapi.repository.StudentRepository;
 import com.integrador.svfapi.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -61,7 +60,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         Month startMonth = Month.MARCH;
 
         for (Pension pension : pensionList) {
-            LocalDate dueDate = pension.getDue_date();
+            LocalDate dueDate = pension.getDueDate();
             if (dueDate.getMonth().getValue()>=startMonth.getValue()) {
                 String formattedMonth = formatter.format(dueDate);
                 if (pension.isStatus()) {
@@ -227,7 +226,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         Month startMonth = Month.MARCH;
 
         for (Pension pension : pensionList) {
-            LocalDate dueDate = pension.getDue_date();
+            LocalDate dueDate = pension.getDueDate();
             if (dueDate.getMonth().getValue()>=startMonth.getValue()) {
                 String formattedMonth = formatter.format(dueDate);
                 if (pension.isStatus()) {
@@ -256,7 +255,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (Pension pension : pensionList) {
             String studentId = pension.getStudent().getStudentCod();
             LocalDate currentDate = LocalDate.now();
-            LocalDate dueDate = pension.getDue_date();
+            LocalDate dueDate = pension.getDueDate();
 
             if (pension.isStatus() && currentDate.isAfter(dueDate)) {
                 paidStudents.add(studentId);

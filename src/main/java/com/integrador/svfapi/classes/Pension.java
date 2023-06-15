@@ -14,14 +14,14 @@ import java.time.LocalDate;
 public class Pension {
     @Id
     @Column(name = "pension_cod")
-    private int pension_cod;
+    private int pensionCod;
     @Column(name = "due_date")
-    private LocalDate due_date;
+    private LocalDate dueDate;
     @Column(name = "amount")
     private double amount;
     @Column(name = "status")
     private boolean status;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_cod")
+    @JoinColumn(name = "student_cod", referencedColumnName = "student_cod")
     private Student student;
 }
