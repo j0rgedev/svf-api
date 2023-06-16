@@ -460,7 +460,7 @@ public class StudentServiceImpl implements StudentService {
 
         for (LocalDate dueDate : due_dates) {
             Pension studentPension = new Pension();
-            studentPension.setDue_date(dueDate);
+            studentPension.setDueDate(dueDate);
             studentPension.setAmount(pensionByLevel.get(student.getCurrentLevel()));
             studentPension.setStatus(false);
             studentPension.setStudent(student);

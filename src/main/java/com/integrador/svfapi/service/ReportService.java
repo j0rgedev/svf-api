@@ -10,5 +10,5 @@ import java.io.FileNotFoundException;
 @Service
 public interface ReportService {
 
-    ResponseEntity<ResponseFormat> exportReport(String reportFormat) throws FileNotFoundException, JRException;
+    ResponseEntity<ResponseFormat> exportReport(String token, String reportFormat) throws FileNotFoundException, JRException;
 }

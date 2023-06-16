@@ -3,9 +3,9 @@ package com.integrador.svfapi.controllers;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.updateStudentBody.UpdateStudentInfoDTO;
 import com.integrador.svfapi.exception.BusinessException;
+import com.integrador.svfapi.service.impl.ReportServiceImpl;
 import com.integrador.svfapi.service.impl.StatisticsServiceImpl;
 import com.integrador.svfapi.service.impl.StudentServiceImpl;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,11 +19,13 @@ public class AdminController {
 
     private final StudentServiceImpl studentServiceImpl;
     private final StatisticsServiceImpl statisticsServiceImpl;
+    private final ReportServiceImpl reportServiceImpl;
 
     @Autowired
-    public AdminController(StudentServiceImpl studentServiceImpl, StatisticsServiceImpl statisticsServiceImpl) {
+    public AdminController(StudentServiceImpl studentServiceImpl, StatisticsServiceImpl statisticsServiceImpl, ReportServiceImpl reportServiceImpl) {
         this.studentServiceImpl = studentServiceImpl;
         this.statisticsServiceImpl = statisticsServiceImpl;
+        this.reportServiceImpl = reportServiceImpl;
     }
 
     @PostMapping("/students")
@@ -122,5 +124,17 @@ public class AdminController {
         if(monthNumber < 3 || monthNumber > 12) throw new BusinessException(HttpStatus.BAD_REQUEST, "El mes debe estar entre 3 y 12");
 
         return statisticsServiceImpl.getTotalDebt(token, monthNumber);
+    }
+
+    @PostMapping("/report/{format}")
+    public ResponseEntity<?> generateReport(
+            @RequestHeader("Authorization") @NotBlank String token,
+            @PathVariable("format") String format
+    ) {
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+
+        return reportServiceImpl.exportReport(token, format);
     }
 }
