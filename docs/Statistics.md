@@ -1,7 +1,7 @@
 # Gráficos principales
 Este endpoint se encarga de devolver los gráficos principales de la página de administrador.
 ```htt
-POST /admin/dashboard1
+POST /admin/general-dashboard
 ```
 
 `Header`
@@ -17,14 +17,20 @@ POST /admin/dashboard1
   "status": 200,
   "message": "OK",
   "data": {
-    "lastFiveEnrolledStudents": [
+    "paidPensionsCount": [
       {
-        "code": "",
+        "month": "",
+        "count": 0
+      }
+    ],
+    "lastEnrolledStudents": [
+      {
+        "studentCod": "",
         "fullName": "",
         "level": ""
       }
     ],
-    "enrollmentInformation": {
+    "enrollmentCount": {
       "totalStudents": 0,
       "enrolled": 0,
       "notEnrolled": 0

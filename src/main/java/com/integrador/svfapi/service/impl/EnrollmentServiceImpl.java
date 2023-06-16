@@ -28,7 +28,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final JwtUtil jwtUtil;
     private final EnrollmentRepository enrollmentRepository;
-    private final EnrollmentDetailsRepository enrollmentDetailsRepository;
     private final TermsAndConditionsRepository termsAndConditionsRepository;
     private final TermsDetailsRepository termsDetailsRepository;
     private final LevelCostsRepository levelCostsRepository;
@@ -36,14 +35,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     public EnrollmentServiceImpl(
             JwtUtil jwtUtil, EnrollmentRepository enrollmentRepository,
-            EnrollmentDetailsRepository enrollmentDetailsRepository,
             TermsAndConditionsRepository termsAndConditionsRepository,
             TermsDetailsRepository termsDetailsRepository,
             LevelCostsRepository levelCostsRepository
     ) {
         this.jwtUtil = jwtUtil;
         this.enrollmentRepository = enrollmentRepository;
-        this.enrollmentDetailsRepository = enrollmentDetailsRepository;
         this.termsAndConditionsRepository = termsAndConditionsRepository;
         this.termsDetailsRepository = termsDetailsRepository;
         this.levelCostsRepository = levelCostsRepository;
@@ -73,9 +70,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             amountsDTO.add(new LevelCostsDTO(levelCosts.getName(), levelCosts.getCost()));
         }
         response.setLevelCosts(amountsDTO);
-        String msg = "Se envian los datos de matricula del presente año escolar";
 
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, response));
+        return ResponseEntity.ok().body(new ResponseFormat(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                response));
     }
 
     @Override
@@ -100,22 +99,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollment.setStudentCod(studentCod);
                 enrollment.setPaymentId(enrollmentDTO.getPaymentMethod().getPaymentId());
                 enrollment.setStatus(true);
+                enrollment.setDate(enrollmentDTO.getDate());
+                enrollment.setAmount(enrollmentDTO.getTotalAmount());
                 enrollment.setTermsConditionsId(thisYearId);
-
-                EnrollmentDetails enrollmentDetails = new EnrollmentDetails();
-                enrollmentDetails.setEnrollmentId(newEnrollmentId);
-                enrollmentDetails.setDate(enrollmentDTO.getDate());
-                enrollmentDetails.setTotalAmount(enrollmentDTO.getTotalAmount());
-
                 enrollmentRepository.saveAndFlush(enrollment);
-                enrollmentDetailsRepository.saveAndFlush(enrollmentDetails);
             }
-            String msg = "El Id de la nueva matrícula se ha generado correctamente";
             HashMap<String, String> data = new HashMap<>();
             data.put("enrollmentId", newEnrollmentId);
-
-
-            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), msg, data));
+            return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), data));
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }

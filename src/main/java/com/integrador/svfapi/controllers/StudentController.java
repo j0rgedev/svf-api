@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/enrollment")
+@RequestMapping("/api/v1/student")
 public class StudentController {
 
     private final StudentServiceImpl studentServiceImpl;
@@ -18,15 +18,27 @@ public class StudentController {
     }
 
     /*
-    * ENROLLMENT PROCESS ENDPOINTS
+    * INTRANET ENDPOINTS
     * */
-    @PostMapping("/student-info") // Endpoint for student information
-    public ResponseEntity<?> studentInformation(
+    @PostMapping("/")
+    public ResponseEntity<?> getStudent(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
         // Check if the token is valid
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.studentInformation(token);
+        return studentServiceImpl.getStudent(token);
+    }
+
+
+
+    @PostMapping("/pensions") // Endpoint for student pensions
+    public ResponseEntity<?> studentPensions(
+            @RequestHeader("Authorization") @NotBlank String token
+    ) {
+        // Check if the token is valid
+        if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
+        return studentServiceImpl.studentPensions(token);
     }
 }

@@ -1,7 +1,7 @@
 package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
-import com.integrador.svfapi.dto.dashboardDTO.*;
+import com.integrador.svfapi.dto.StudentPensionDTO;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.getAllStudents.SingleStudentDTO;
 import com.integrador.svfapi.dto.getAllStudents.StudentListDTO;
@@ -12,13 +12,13 @@ import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.StudentService;
 import com.integrador.svfapi.utils.*;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -30,6 +30,7 @@ public class StudentServiceImpl implements StudentService {
     private final RepresentativesRepository representativesRepository;
     private final StudentRepresentativesRepository studentRepresentativesRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PensionRepository pensionRepository;
     private final UserRepository userRepository;
     private final CodeGenerator codeGenerator;
     private final PasswordEncryption passwordEncryption;
@@ -37,10 +38,12 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     public StudentServiceImpl(
             JwtUtil jwtUtil,
-            JMail jMail, StudentRepository studentRepository,
+            JMail jMail,
+            StudentRepository studentRepository,
             RepresentativesRepository representativesRepository,
             StudentRepresentativesRepository studentRepresentativesRepository,
             EnrollmentRepository enrollmentRepository,
+            PensionRepository pensionRepository,
             UserRepository userRepository,
             CodeGenerator codeGenerator,
             PasswordEncryption passwordEncryption) {
@@ -50,6 +53,7 @@ public class StudentServiceImpl implements StudentService {
         this.representativesRepository = representativesRepository;
         this.studentRepresentativesRepository = studentRepresentativesRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.pensionRepository = pensionRepository;
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncryption = passwordEncryption;
@@ -175,42 +179,6 @@ public class StudentServiceImpl implements StudentService {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
 
-    }
-
-    @Override
-    public ResponseEntity<ResponseFormat> getStudentByQuery(String token, String query) {
-        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
-        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.ADMIN)) {
-            if (query.startsWith("SVF")){
-                return getStudentById(token, query);
-            } else {
-                Optional<Student> student = Optional.ofNullable(studentRepository.findStudentByLastNames(query));
-                if (student.isPresent()){
-                    SingleStudentDTO singleStudentDTO = new SingleStudentDTO(
-                            student.get().getStudentCod(),
-                            student.get().getNames(),
-                            student.get().getLastNames(),
-                            student.get().getBirthday(),
-                            student.get().getDni(),
-                            student.get().getAddress(),
-                            student.get().getEmail(),
-                            student.get().getPhone(),
-                            student.get().getCurrentLevel(),
-                            student.get().getCurrentGrade()
-                    );
-                    return ResponseEntity.ok().body(new ResponseFormat(
-                            HttpStatus.OK.value(),
-                            HttpStatus.OK.getReasonPhrase(),
-                            singleStudentDTO
-                    ));
-                } else {
-                    throw new BusinessException(HttpStatus.NOT_FOUND, "User not found");
-                }
-            }
-
-        } else {
-            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
     }
 
     /**
@@ -349,7 +317,7 @@ public class StudentServiceImpl implements StudentService {
     public ResponseEntity<ResponseFormat> deleteStudent(String token, String studentCod) {
         TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
         if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.ADMIN)) {
-            //Validación del a existencia del registro
+            //Validación de la existencia del registro
             Optional<Student> result = Optional.ofNullable(studentRepository.findByStudentCod(studentCod));
             if (result.isPresent()) {
                 Student foundStudent = result.get();
@@ -367,127 +335,137 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
-    public ResponseEntity<ResponseFormat> dashboardGraphics(){
-        List<Student> lastFiveStudent = studentRepository.getLastFiveEnrolledStudents();
-        List<LastFiveStudentsDTO> lastFiveStudentsDTO = new ArrayList<>();
-        for (Student student : lastFiveStudent) {
-            lastFiveStudentsDTO.add(new LastFiveStudentsDTO(
-                    student.getStudentCod(),
-                    student.getNames() + " " + student.getLastNames(),
-                    student.getCurrentLevel()));
+
+    @Override
+    public ResponseEntity<ResponseFormat> getStudent(String token){
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            Student student = studentRepository.findById(tokenValidationResult.code())
+                    .orElseThrow(()-> new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe"));
+
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    new StudentInformation(
+                            student.getNames(),
+                            student.getLastNames()
+                    )
+            ));
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
-
-        List<Student> studentList = studentRepository.findActiveStudents();
-        int totalStudents = studentList.size();
-        int enrolled = (int)studentList.stream().filter(Student::isEnrolled).count();
-        int notEnrolled = totalStudents - enrolled;
-        EnrollmentCountDTO enrollmentCountDTO = new EnrollmentCountDTO(totalStudents, enrolled, notEnrolled);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("lastFiveEnrolledStudents", lastFiveStudentsDTO);
-        data.put("EnrollmentInformation", enrollmentCountDTO);
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "OK", data));
     }
 
-    public ResponseEntity<ResponseFormat> secondGraphic(){
+    private record StudentInformation(
+            String studentName,
+            String studentLastName
+    ){}
 
-//        // Conteo de alumnos por genero
-        List<Student> studentList = studentRepository.findActiveStudents();
-        List<Student> enrolledStudentList = studentList.stream().filter(Student::isEnrolled).toList();
-        int totalStudents = enrolledStudentList.size();
-        int boys = (int) enrolledStudentList.stream().filter(student -> student.getGender() == 'M').count();
-        int girls = totalStudents - boys;
-        EnrolledByGenderDTO enrolledByGenderDTO = new EnrolledByGenderDTO(boys, girls, totalStudents);
+    /**
+     *  Método que permite obtener todas las pensiones de un estudiante.
+     *
+     * @param token Token de autenticación.
+     * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
+     */
+    @Override
+    public ResponseEntity<ResponseFormat> studentPensions(String token) {
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            String[] pensionNames = {
+                    "Pensión de marzo",
+                    "Pensión de abril",
+                    "Pensión de mayo",
+                    "Pensión de junio",
+                    "Pensión de julio",
+                    "Pensión de agosto",
+                    "Pensión de septiembre",
+                    "Pensión de octubre",
+                    "Pensión de noviembre",
+                    "Pensión de diciembre"
+            };
+            Student student = studentRepository.findByStudentCod(tokenValidationResult.code());
+            List<Pension> studentPensions = pensionRepository.findAllByStudent(student);
 
-        // Conteo de matriculas por año
-        List<EnrollmentCountByYearAndLevel> enrollmentCountByYearAndLevelList = studentRepository.getEnrollmentCountByYearAndLevel();
-        Map<Integer, List<LevelCount>> enrollmentByYear = new HashMap<>();
-        for (EnrollmentCountByYearAndLevel countByYearAndLevel: enrollmentCountByYearAndLevelList) {
-            int year = countByYearAndLevel.getYear();
-            Optional<List<LevelCount>> result = Optional.ofNullable(enrollmentByYear.get(year));
-            if (result.isPresent()) {
-                List<LevelCount> levelCounts = result.get();
-                levelCounts.add(new LevelCount(countByYearAndLevel.getCurrentLevel(), (int)countByYearAndLevel.getCount()));
-                enrollmentByYear.put(year, levelCounts);
-            } else {
-                List<LevelCount> levelCounts = new ArrayList<>();
-                levelCounts.add(new LevelCount(countByYearAndLevel.getCurrentLevel(), (int)countByYearAndLevel.getCount()));
-                enrollmentByYear.put(year, levelCounts);
+            if(studentPensions.isEmpty()) return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    new StudentPensionDTO(
+                            0,
+                            new ArrayList<>()
+                    )
+            ));
+
+            List<PensionDTO> pensionDTOList = new ArrayList<>();
+            LocalDate currentDate = LocalDate.now();
+            double totalDebt = 0;
+
+            for (int i = 0; i < studentPensions.size(); i++) {
+                Pension pension = studentPensions.get(i);
+                boolean isPaid = pension.isStatus();
+                totalDebt += !isPaid ? pension.getAmount() : 0;
+                String status = pension.getDueDate().isBefore(currentDate) ? "Vencido" : "Pendiente";
+
+                PensionDTO pensionDTO = new PensionDTO(
+                        pension.getPensionCod(),
+                        pensionNames[i],
+                        pension.getAmount(),
+                        pension.getDueDate(),
+                        status
+                );
+                pensionDTOList.add(pensionDTO);
             }
+
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    new StudentPensionDTO(
+                            totalDebt,
+                            Collections.singletonList(pensionDTOList)
+                    )
+            ));
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
-//
-        // Conteo de matriculas por nivel y grado
-        List<Student> enrolledStudents = studentRepository.findByIsEnrolled(true);
-
-        int[] inicialCounts = new int[3];
-        String firstLevel = "Primaria";
-
-        for (int i = 0; i < inicialCounts.length; i++) {
-            char grade = Character.forDigit(i + 1, 10);
-            inicialCounts[i] = countByLevelAndGrade(enrolledStudents, firstLevel, grade);
-        }
-
-        int[] primariaCounts = new int[6];
-        String secondLevel = "Primaria";
-
-        for (int i = 0; i < primariaCounts.length; i++) {
-            char grade = Character.forDigit(i + 1, 10);
-            primariaCounts[i] = countByLevelAndGrade(enrolledStudents, secondLevel, grade);
-        }
-
-        int[] secundariaCounts = new int[5];
-        String thirdLevel = "Secundaria";
-
-        for (int i = 0; i < secundariaCounts.length; i++) {
-            char grade = Character.forDigit(i + 1, 10);
-            secundariaCounts[i] = countByLevelAndGrade(enrolledStudents, thirdLevel, grade);
-        }
-
-        Map<String, Map<String, Integer>> enrollmentByLevelAndGrade = new HashMap<>();
-
-        // Crear los niveles y grados iniciales
-        Map<String, Integer> inicialGrades = new HashMap<>();
-        // Agregar los grados de Inicial
-        inicialGrades.put("3", inicialCounts[0]);
-        inicialGrades.put("4", inicialCounts[1]);
-        inicialGrades.put("5", inicialCounts[2]);
-
-        enrollmentByLevelAndGrade.put("Inicial", inicialGrades);
-
-        Map<String, Integer> primariaGrades = new HashMap<>();
-        // Agregar los grados de Primaria
-        primariaGrades.put("1", primariaCounts[0]);
-        primariaGrades.put("2", primariaCounts[1]);
-        primariaGrades.put("3", primariaCounts[2]);
-        primariaGrades.put("4", primariaCounts[3]);
-        primariaGrades.put("5", primariaCounts[4]);
-        primariaGrades.put("6", primariaCounts[5]);
-
-        enrollmentByLevelAndGrade.put("Primaria", primariaGrades);
-
-        Map<String, Integer> secundariaGrades = new HashMap<>();
-        // Agregar los grados de Secundaria
-        secundariaGrades.put("1", secundariaCounts[0]);
-        secundariaGrades.put("2", secundariaCounts[1]);
-        secundariaGrades.put("3", secundariaCounts[2]);
-        secundariaGrades.put("4", secundariaCounts[3]);
-        secundariaGrades.put("5", secundariaCounts[4]);
-
-        enrollmentByLevelAndGrade.put("Secundaria", secundariaGrades);
-
-        // Creación de la data
-        Map<String, Object> data = new HashMap<>();
-        data.put("enrolledStudents", enrolledByGenderDTO);
-        data.put("enrollmentByYear", enrollmentByYear);
-        data.put("enrollmentByLevelAndGrade", enrollmentByLevelAndGrade);
-
-        return ResponseEntity.ok().body(new ResponseFormat(HttpStatus.OK.value(), "OK", data));
     }
 
-    private int countByLevelAndGrade(List<Student> studentList, String level, char grade) {
-        return (int) studentList.stream()
-                .filter(student -> student.getCurrentLevel().equals(level) && student.getCurrentGrade() == grade)
-                .count();
+    private record PensionDTO(
+            int pensionCod,
+            String pensionName,
+            Double pensionAmount,
+            LocalDate dueDate,
+            String status
+    ){ }
+
+    // Función que permite crear las pensiones de un estudiante
+    private void createStudentPensions(String studentCod){
+        LocalDate[] due_dates = {
+                LocalDate.of(2023, 3, 6),
+                LocalDate.of(2023, 4, 6),
+                LocalDate.of(2023, 5, 6),
+                LocalDate.of(2023, 6, 6),
+                LocalDate.of(2023, 7, 6),
+                LocalDate.of(2023, 8, 6),
+                LocalDate.of(2023, 9, 6),
+                LocalDate.of(2023, 10, 6),
+                LocalDate.of(2023, 11, 6),
+                LocalDate.of(2023, 12, 6)
+        };
+        Map<String, Double> pensionByLevel = new HashMap<>();
+        pensionByLevel.put("Inicial", 300.00);
+        pensionByLevel.put("Primaria", 350.00);
+        pensionByLevel.put("Secundaria", 400.00);
+
+        Student student = studentRepository.findById(studentCod)
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe"));
+
+        for (LocalDate dueDate : due_dates) {
+            Pension studentPension = new Pension();
+            studentPension.setDueDate(dueDate);
+            studentPension.setAmount(pensionByLevel.get(student.getCurrentLevel()));
+            studentPension.setStatus(false);
+            studentPension.setStudent(student);
+            pensionRepository.save(studentPension);
+        }
     }
 
     /*

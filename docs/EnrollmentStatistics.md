@@ -1,7 +1,7 @@
 # Gráficos de estadísticas de matrícula
 Este endpoint se encarga de devolver los datos necesarios para mostrar los gráficos de estadísticas de matrícula en la intranet del administrador.
 ```htt
-POST /admin/dashboard2
+POST /admin/enrollment-dashboard
 ```
 
 `Header`
