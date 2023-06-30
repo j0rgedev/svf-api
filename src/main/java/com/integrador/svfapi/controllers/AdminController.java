@@ -83,12 +83,13 @@ public class AdminController {
 
     @PostMapping("/general-dashboard")
     public ResponseEntity<?> generalDashboard(
-            @RequestHeader("Authorization") @NotBlank String token
+            @RequestHeader("Authorization") @NotBlank String token,
+            @RequestParam("monthNumber") int monthNumber
     ) {
         // Check if the token is valid
         if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return statisticsServiceImpl.getGeneralStatistics(token);
+        return statisticsServiceImpl.getGeneralStatistics(token, monthNumber);
     }
 
     @PostMapping("/enrollment-dashboard")

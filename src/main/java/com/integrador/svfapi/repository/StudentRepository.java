@@ -5,6 +5,7 @@ import com.integrador.svfapi.dto.dashboardDTO.EnrollmentCountByYearAndLevel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.integrador.svfapi.classes.Student;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,6 +26,15 @@ public interface StudentRepository extends JpaRepository<Student, String> {
                     "ORDER BY e.date DESC " +
                     "LIMIT 5", nativeQuery = true)
     List<Student> getLastFiveEnrolledStudents();
+
+    @Query(value =  "SELECT s.* " +
+            "FROM student s " +
+            "INNER JOIN user u ON s.user_id = u.user_id " +
+            "INNER JOIN enrollment e ON s.student_cod = e.student_cod " +
+            "WHERE u.is_active = true and month(e.date) = :monthNumber " +
+            "ORDER BY e.date DESC " +
+            "LIMIT 5", nativeQuery = true)
+    List<Student> getLastFiveEnrolledStudentsByMonth(@Param("monthNumber") int monthNumber);
 
     @Query(value =  "SELECT YEAR(e.date) AS year, s.current_level AS currentLevel, COUNT(*) AS count " +
                     "FROM student s " +

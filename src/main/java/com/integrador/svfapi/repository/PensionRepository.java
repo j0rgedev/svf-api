@@ -2,7 +2,6 @@ package com.integrador.svfapi.repository;
 
 import com.integrador.svfapi.classes.Pension;
 import com.integrador.svfapi.classes.Student;
-import com.integrador.svfapi.dto.dashboardDTO.DebtByMonth;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +12,17 @@ import java.util.List;
 @Repository
 public interface PensionRepository extends JpaRepository<Pension, Integer> {
     List<Pension> findAllByStudent(Student student);
+
+    @Query(value = "SELECT month(due_date) AS month, " +
+            "if(status = 1, count(*), 0) AS count " +
+            "FROM pension GROUP BY status , due_date", nativeQuery = true)
+    List<Object[]> getPensionsQuantity();
+
+    @Query(value = "SELECT month(due_date) AS month, " +
+            "if(status = 1, count(*), 0) AS count " +
+            "FROM pension where month(due_date) = :monthNumber " +
+            "GROUP BY status , due_date", nativeQuery = true)
+    Object[] getPensionsQuantityByMonth(@Param("monthNumber") int monthNumber);
 
     @Query(value = "SELECT " +
             "SUM(p.amount) AS totalDebt, " +

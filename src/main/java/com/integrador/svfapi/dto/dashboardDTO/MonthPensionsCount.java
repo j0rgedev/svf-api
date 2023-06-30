@@ -7,6 +7,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Data
 public class MonthPensionsCount {
-    private String month;
-    private int count;
+    private int monthNumber;
+    private long count;
 }

@@ -31,15 +31,20 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public ResponseEntity<ResponseFormat> getGeneralStatistics(String token) {
+    public ResponseEntity<ResponseFormat> getGeneralStatistics(String token, int monthNumber) {
 
-        List<MonthPensionsCount> monthPensionsCount = getPensionQuantity();
+        List<MonthPensionsCount> monthPensionsCount = getPensionQuantity(monthNumber);
 
-        List<Student> lastFiveStudent = studentRepository.getLastFiveEnrolledStudents();
+        List<Student> lastFiveStudent;
+        if (monthNumber == 0) {
+            lastFiveStudent = studentRepository.getLastFiveEnrolledStudents();
+        } else {
+            lastFiveStudent = studentRepository.getLastFiveEnrolledStudentsByMonth(monthNumber);
+        }
         List<LastEnrolledStudentsDTO> lastEnrolledStudentsDTO = getLastFiveStudentsDTO(lastFiveStudent);
 
         List<Student> studentList = studentRepository.findActiveStudents();
-        EnrollmentCountDTO enrollmentCountDTO = getEnrollmentCountDTO(studentList);
+        EnrollmentCountDTO enrollmentCountDTO = getEnrollmentCountDTO(studentList, monthNumber);
 
         return ResponseEntity.ok().body(new ResponseFormat(
                 HttpStatus.OK.value(),
@@ -52,34 +57,25 @@ public class StatisticsServiceImpl implements StatisticsService {
         ));
     }
 
-    private List<MonthPensionsCount> getPensionQuantity() {
-        List<Pension> pensionList = pensionRepository.findAll();
+    private List<MonthPensionsCount> getPensionQuantity(int month) {
         List<MonthPensionsCount> monthPensionsCounts = new ArrayList<>();
-        Map<String, Integer> monthCount = new HashMap<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM", new Locale("es"));
-        Month startMonth = Month.MARCH;
 
-        for (Pension pension : pensionList) {
-            LocalDate dueDate = pension.getDueDate();
-            if (dueDate.getMonth().getValue()>=startMonth.getValue()) {
-                String formattedMonth = formatter.format(dueDate);
-                if (pension.isStatus()) {
-                    monthCount.put(formattedMonth, monthCount.getOrDefault(formattedMonth, 0) + 1);
-                } else {
-                    monthCount.put(formattedMonth, monthCount.getOrDefault(formattedMonth, 0));
-                }
+        if(month== 0){
+            List<Object[]> pensionsAmount = pensionRepository.getPensionsQuantity();
+
+            for(Object[] pensionAmount : pensionsAmount){
+                monthPensionsCounts.add(new MonthPensionsCount(
+                        (int) pensionAmount[0],
+                        (Long) pensionAmount[1]
+                ));
             }
+        } else {
+            Object[] pensionsAmountByMonth = pensionRepository.getPensionsQuantityByMonth(month);
+            monthPensionsCounts.add(new MonthPensionsCount(
+                    (int) pensionsAmountByMonth[0],
+                    (Long) pensionsAmountByMonth[1]
+            ));
         }
-
-        for (Month month : Month.values()) {
-            if(month.getValue()== 1 || month.getValue()== 2){
-                continue;
-            }
-            String monthName = month.getDisplayName(TextStyle.SHORT, new Locale("es"));
-            int count = monthCount.getOrDefault(monthName, 0);
-            monthPensionsCounts.add(new MonthPensionsCount(monthName, count));
-        }
-
         return monthPensionsCounts;
     }
 
@@ -94,10 +90,17 @@ public class StatisticsServiceImpl implements StatisticsService {
         return lastEnrolledStudentsDTO;
     }
 
-    private EnrollmentCountDTO getEnrollmentCountDTO(List<Student> studentList) {
-        int totalStudents = studentList.size();
-        int enrolled = (int) studentList.stream().filter(Student::isEnrolled).count();
-        int notEnrolled = totalStudents - enrolled;
+    private EnrollmentCountDTO getEnrollmentCountDTO(List<Student> studentList, int monthNumber) {
+        int totalStudents, enrolled, notEnrolled;
+        if (monthNumber==0){
+            totalStudents = studentList.size();
+            enrolled = (int) studentList.stream().filter(Student::isEnrolled).count();
+            notEnrolled = totalStudents - enrolled;
+        } else {
+            totalStudents = studentList.size();
+            enrolled = (int) studentList.stream().filter(student -> student.isEnrolled() && student.getBirthday().getMonthValue() == monthNumber).count();
+            notEnrolled = totalStudents - enrolled;
+        }
         return new EnrollmentCountDTO(totalStudents, enrolled, notEnrolled);
     }
 
