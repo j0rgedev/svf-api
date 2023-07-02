@@ -4,6 +4,7 @@ import com.integrador.svfapi.classes.Pension;
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Student;
 import com.integrador.svfapi.dto.dashboardDTO.*;
+import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.PensionRepository;
 import com.integrador.svfapi.repository.StudentRepository;
 import com.integrador.svfapi.service.StatisticsService;
@@ -43,7 +44,13 @@ public class StatisticsServiceImpl implements StatisticsService {
         }
         List<LastEnrolledStudentsDTO> lastEnrolledStudentsDTO = getLastFiveStudentsDTO(lastFiveStudent);
 
-        List<Student> studentList = studentRepository.findActiveStudents();
+        List<Student> studentList;
+        if (monthNumber == 0) {
+            studentList = studentRepository.findActiveStudents();
+        } else {
+            studentList = studentRepository.getLastFiveEnrolledStudentsByMonth(monthNumber);
+        }
+
         EnrollmentCountDTO enrollmentCountDTO = getEnrollmentCountDTO(studentList, monthNumber);
 
         return ResponseEntity.ok().body(new ResponseFormat(
@@ -70,11 +77,13 @@ public class StatisticsServiceImpl implements StatisticsService {
                 ));
             }
         } else {
-            Object[] pensionsAmountByMonth = pensionRepository.getPensionsQuantityByMonth(month);
-            monthPensionsCounts.add(new MonthPensionsCount(
-                    (int) pensionsAmountByMonth[0],
-                    (Long) pensionsAmountByMonth[1]
-            ));
+            List<Object[]> pensionsAmountByMonth = pensionRepository.getPensionsQuantityByMonth(month);
+            for(Object[] pensionAmount : pensionsAmountByMonth){
+                monthPensionsCounts.add(new MonthPensionsCount(
+                        (int) pensionAmount[0],
+                        (Long) pensionAmount[1]
+                ));
+            }
         }
         return monthPensionsCounts;
     }
@@ -97,9 +106,9 @@ public class StatisticsServiceImpl implements StatisticsService {
             enrolled = (int) studentList.stream().filter(Student::isEnrolled).count();
             notEnrolled = totalStudents - enrolled;
         } else {
-            totalStudents = studentList.size();
-            enrolled = (int) studentList.stream().filter(student -> student.isEnrolled() && student.getBirthday().getMonthValue() == monthNumber).count();
-            notEnrolled = totalStudents - enrolled;
+            totalStudents = 0;
+            enrolled = studentList.size();
+            notEnrolled = 0;
         }
         return new EnrollmentCountDTO(totalStudents, enrolled, notEnrolled);
     }
