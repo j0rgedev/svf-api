@@ -20,32 +20,32 @@ public class ControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> handleException(MethodArgumentNotValidException e) {
-        ErrorDTO errorDTO = new ErrorDTO(e.getStatusCode().value(), "Invalid data format. Please, check the documentation");
+        ErrorDTO errorDTO = new ErrorDTO(e.getStatusCode().value(), "Formato de datos inválido. Por favor, revise la documentación");
         return ResponseEntity.status(400).body(errorDTO);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorDTO> handleException(MissingServletRequestParameterException e) {
-        ErrorDTO errorDTO = new ErrorDTO(400, "Invalid data format. Please, check the documentation");
+        ErrorDTO errorDTO = new ErrorDTO(400, "Formato de datos inválido. Por favor, revise la documentación");
         return ResponseEntity.status(400).body(errorDTO);
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ErrorDTO> handleException(MissingRequestHeaderException e) {
-        ErrorDTO errorDTO = new ErrorDTO(400, "Invalid data format. Please, check the documentation");
+        ErrorDTO errorDTO = new ErrorDTO(400, "Formato de datos inválido. Por favor, revise la documentación");
         return ResponseEntity.status(400).body(errorDTO);
     }
 
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleException(Exception e) {
-        ErrorDTO errorDTO = new ErrorDTO(500, "Internal server error"+e.getMessage());
+        ErrorDTO errorDTO = new ErrorDTO(500, "Error interno del servidor"+e.getMessage());
         return ResponseEntity.status(500).body(errorDTO);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ErrorDTO> handleException(NoHandlerFoundException e) {
-        ErrorDTO errorDTO = new ErrorDTO(e.getStatusCode().value(), "Invalid endpoint. Please, check the documentation");
+        ErrorDTO errorDTO = new ErrorDTO(e.getStatusCode().value(), "Formato de datos inválido. Por favor, revise la documentación");
         return ResponseEntity.status(404).body(errorDTO);
     }
 
