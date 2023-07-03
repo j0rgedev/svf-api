@@ -48,7 +48,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         if (monthNumber == 0) {
             studentList = studentRepository.findActiveStudents();
         } else {
-            studentList = studentRepository.getLastFiveEnrolledStudentsByMonth(monthNumber);
+            studentList = studentRepository.findActiveStudentsByMonth(monthNumber);
         }
 
         EnrollmentCountDTO enrollmentCountDTO = getEnrollmentCountDTO(studentList, monthNumber);

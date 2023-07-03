@@ -36,6 +36,13 @@ public interface StudentRepository extends JpaRepository<Student, String> {
             "LIMIT 5", nativeQuery = true)
     List<Student> getLastFiveEnrolledStudentsByMonth(@Param("monthNumber") int monthNumber);
 
+
+    @Query(value = "select s.* from student s " +
+            "inner join user u on s.user_id=u.user_id " +
+            "inner join enrollment e on s.student_cod = e.student_cod " +
+            "where u.is_active is not false and month(e.date) = :monthNumber", nativeQuery = true)
+    List<Student> findActiveStudentsByMonth(@Param("monthNumber") int monthNumber);
+
     @Query(value =  "SELECT YEAR(e.date) AS year, s.current_level AS currentLevel, COUNT(*) AS count " +
                     "FROM student s " +
                     "INNER JOIN enrollment e ON s.student_cod = e.student_cod " +
