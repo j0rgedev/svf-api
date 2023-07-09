@@ -21,8 +21,8 @@ public interface PensionRepository extends JpaRepository<Pension, Integer> {
     @Query(value = "SELECT month(due_date) AS month, " +
             "if(status = 1, count(*), 0) AS count " +
             "FROM pension where month(due_date) = :monthNumber " +
-            "GROUP BY status , due_date", nativeQuery = true)
-    Object[] getPensionsQuantityByMonth(@Param("monthNumber") int monthNumber);
+            "GROUP BY status , due_date limit 1", nativeQuery = true)
+    List<Object[]> getPensionsQuantityByMonth(@Param("monthNumber") int monthNumber);
 
     @Query(value = "SELECT " +
             "SUM(p.amount) AS totalDebt, " +
