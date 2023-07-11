@@ -32,13 +32,14 @@ public class StudentController {
 
 
 
-    @PostMapping("/pensions") // Endpoint for student pensions
+    @PostMapping("/pensions/{status}") // Endpoint for student pensions
     public ResponseEntity<?> studentPensions(
-            @RequestHeader("Authorization") @NotBlank String token
+            @RequestHeader("Authorization") @NotBlank String token,
+            @PathVariable("status") @NotBlank boolean status
     ) {
         // Check if the token is valid
         if(!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         token = token.replace("Bearer ", "");
-        return studentServiceImpl.studentPensions(token);
+        return studentServiceImpl.studentPensions(token, status);
     }
 }

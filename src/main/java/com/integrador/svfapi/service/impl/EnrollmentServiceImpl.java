@@ -8,7 +8,6 @@ import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.EnrollmentService;
-import com.integrador.svfapi.utils.JMail;
 import com.integrador.svfapi.utils.JwtUtil;
 import com.integrador.svfapi.utils.TokenType;
 import com.integrador.svfapi.utils.TokenValidationResult;
@@ -22,12 +21,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final JwtUtil jwtUtil;
     private final EnrollmentRepository enrollmentRepository;
+    private final StudentRepository studentRepository;
+    private final PensionRepository pensionRepository;
     private final TermsAndConditionsRepository termsAndConditionsRepository;
     private final TermsDetailsRepository termsDetailsRepository;
     private final LevelCostsRepository levelCostsRepository;
@@ -35,12 +37,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     public EnrollmentServiceImpl(
             JwtUtil jwtUtil, EnrollmentRepository enrollmentRepository,
-            TermsAndConditionsRepository termsAndConditionsRepository,
+            StudentRepository studentRepository, PensionRepository pensionRepository, TermsAndConditionsRepository termsAndConditionsRepository,
             TermsDetailsRepository termsDetailsRepository,
             LevelCostsRepository levelCostsRepository
     ) {
         this.jwtUtil = jwtUtil;
         this.enrollmentRepository = enrollmentRepository;
+        this.studentRepository = studentRepository;
+        this.pensionRepository = pensionRepository;
         this.termsAndConditionsRepository = termsAndConditionsRepository;
         this.termsDetailsRepository = termsDetailsRepository;
         this.levelCostsRepository = levelCostsRepository;
@@ -103,6 +107,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollment.setAmount(enrollmentDTO.getTotalAmount());
                 enrollment.setTermsConditionsId(thisYearId);
                 enrollmentRepository.saveAndFlush(enrollment);
+
+                createStudentPensions(studentCod);
             }
             HashMap<String, String> data = new HashMap<>();
             data.put("enrollmentId", newEnrollmentId);
@@ -111,6 +117,38 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
 
+    }
+
+    // Función que permite crear las pensiones de un estudiante
+    private void createStudentPensions(String studentCod){
+        LocalDate[] due_dates = {
+                LocalDate.of(2023, 3, 6),
+                LocalDate.of(2023, 4, 6),
+                LocalDate.of(2023, 5, 6),
+                LocalDate.of(2023, 6, 6),
+                LocalDate.of(2023, 7, 6),
+                LocalDate.of(2023, 8, 6),
+                LocalDate.of(2023, 9, 6),
+                LocalDate.of(2023, 10, 6),
+                LocalDate.of(2023, 11, 6),
+                LocalDate.of(2023, 12, 6)
+        };
+        Map<String, Double> pensionByLevel = new HashMap<>();
+        pensionByLevel.put("Inicial", 300.00);
+        pensionByLevel.put("Primaria", 350.00);
+        pensionByLevel.put("Secundaria", 400.00);
+
+        Student student = studentRepository.findById(studentCod)
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe"));
+
+        for (LocalDate dueDate : due_dates) {
+            Pension studentPension = new Pension();
+            studentPension.setDueDate(dueDate);
+            studentPension.setAmount(pensionByLevel.get(student.getCurrentLevel()));
+            studentPension.setStatus(false);
+            studentPension.setStudent(student);
+            pensionRepository.save(studentPension);
+        }
     }
 
     private String createEnrollmentId(String id){

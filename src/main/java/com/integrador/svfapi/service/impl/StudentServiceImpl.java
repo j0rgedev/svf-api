@@ -368,25 +368,38 @@ public class StudentServiceImpl implements StudentService {
      * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
      */
     @Override
-    public ResponseEntity<ResponseFormat> studentPensions(String token) {
+    public ResponseEntity<ResponseFormat> studentPensions(String token, boolean pensionStatus) {
         TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
         if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
-            String[] pensionNames = {
-                    "Pensión de marzo",
-                    "Pensión de abril",
-                    "Pensión de mayo",
-                    "Pensión de junio",
-                    "Pensión de julio",
-                    "Pensión de agosto",
-                    "Pensión de septiembre",
-                    "Pensión de octubre",
-                    "Pensión de noviembre",
-                    "Pensión de diciembre"
-            };
             Student student = studentRepository.findByStudentCod(tokenValidationResult.code());
-            List<Pension> studentPensions = pensionRepository.findAllByStudent(student);
+            if(!pensionStatus){
+                return getPensionsByStatus(student, false);
+            } else {
+                return getPensionsByStatus(student, true);
+            }
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+    }
 
-            if(studentPensions.isEmpty()) return ResponseEntity.ok().body(new ResponseFormat(
+    private ResponseEntity<ResponseFormat> getPensionsByStatus(Student student, boolean paid) {
+        List<Pension> studentPensions = pensionRepository.findAllByStudent(student);
+
+        String[] pensionNames = {
+                "Pensión de marzo",
+                "Pensión de abril",
+                "Pensión de mayo",
+                "Pensión de junio",
+                "Pensión de julio",
+                "Pensión de agosto",
+                "Pensión de septiembre",
+                "Pensión de octubre",
+                "Pensión de noviembre",
+                "Pensión de diciembre"
+        };
+
+        if (studentPensions.isEmpty()) {
+            return ResponseEntity.ok().body(new ResponseFormat(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
                     new StudentPensionDTO(
@@ -394,38 +407,50 @@ public class StudentServiceImpl implements StudentService {
                             new ArrayList<>()
                     )
             ));
+        }
 
-            List<PensionDTO> pensionDTOList = new ArrayList<>();
-            LocalDate currentDate = LocalDate.now();
-            double totalDebt = 0;
-
-            for (int i = 0; i < studentPensions.size(); i++) {
-                Pension pension = studentPensions.get(i);
-                boolean isPaid = pension.isStatus();
-                totalDebt += !isPaid ? pension.getAmount() : 0;
-                String status = pension.getDueDate().isBefore(currentDate) ? "Vencido" : "Pendiente";
+        List<PensionDTO> pensions = new ArrayList<>();
+        LocalDate currentDate = LocalDate.now();
+        double totalDebt = 0;
+        int i = -1;
+        for (Pension pension : studentPensions) {
+            i++;
+            boolean isPaid = pension.isStatus();
+            if (paid && isPaid) {
+                String pensionName = pensionNames[i];
 
                 PensionDTO pensionDTO = new PensionDTO(
                         pension.getPensionCod(),
-                        pensionNames[i],
+                        pensionName,
+                        pension.getAmount(),
+                        pension.getDueDate(),
+                        "Pagado"
+                );
+                pensions.add(pensionDTO);
+            } else if (!paid && !isPaid) {
+                totalDebt += pension.getAmount();
+                String status = pension.getDueDate().isBefore(currentDate) ? "Vencido" : "Pendiente";
+                String pensionName = pensionNames[i];
+
+                PensionDTO pensionDTO = new PensionDTO(
+                        pension.getPensionCod(),
+                        pensionName,
                         pension.getAmount(),
                         pension.getDueDate(),
                         status
                 );
-                pensionDTOList.add(pensionDTO);
+                pensions.add(pensionDTO);
             }
-
-            return ResponseEntity.ok().body(new ResponseFormat(
-                    HttpStatus.OK.value(),
-                    HttpStatus.OK.getReasonPhrase(),
-                    new StudentPensionDTO(
-                            totalDebt,
-                            Collections.singletonList(pensionDTOList)
-                    )
-            ));
-        } else {
-            throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
+
+        return ResponseEntity.ok().body(new ResponseFormat(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                new StudentPensionDTO(
+                        paid ? 0 : totalDebt,
+                        Collections.singletonList(pensions)
+                )
+        ));
     }
 
     private record PensionDTO(
@@ -435,38 +460,6 @@ public class StudentServiceImpl implements StudentService {
             LocalDate dueDate,
             String status
     ){ }
-
-    // Función que permite crear las pensiones de un estudiante
-    private void createStudentPensions(String studentCod){
-        LocalDate[] due_dates = {
-                LocalDate.of(2023, 3, 6),
-                LocalDate.of(2023, 4, 6),
-                LocalDate.of(2023, 5, 6),
-                LocalDate.of(2023, 6, 6),
-                LocalDate.of(2023, 7, 6),
-                LocalDate.of(2023, 8, 6),
-                LocalDate.of(2023, 9, 6),
-                LocalDate.of(2023, 10, 6),
-                LocalDate.of(2023, 11, 6),
-                LocalDate.of(2023, 12, 6)
-        };
-        Map<String, Double> pensionByLevel = new HashMap<>();
-        pensionByLevel.put("Inicial", 300.00);
-        pensionByLevel.put("Primaria", 350.00);
-        pensionByLevel.put("Secundaria", 400.00);
-
-        Student student = studentRepository.findById(studentCod)
-                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "El estudiante no existe"));
-
-        for (LocalDate dueDate : due_dates) {
-            Pension studentPension = new Pension();
-            studentPension.setDueDate(dueDate);
-            studentPension.setAmount(pensionByLevel.get(student.getCurrentLevel()));
-            studentPension.setStatus(false);
-            studentPension.setStudent(student);
-            pensionRepository.save(studentPension);
-        }
-    }
 
     /*
         Functions for studentInformation
