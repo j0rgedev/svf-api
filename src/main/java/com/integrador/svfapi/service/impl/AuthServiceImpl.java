@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
             if (isDefaultPassword) {
                 String token = jwtUtil.generateToken(studentCod, 5 * 60 * 1000); // 5 minutes
                 String smsCode = String.valueOf(generateRandomNumber());
-                String redirectUrl = "/matricula/validacion/?tempToken=" + token;
+                String redirectUrl = "validacion?tempToken=" + token;
                 saveSms(studentCod, smsCode);
                 //Sms sending
                 String studentPhoneNumber = student.getPhone();
