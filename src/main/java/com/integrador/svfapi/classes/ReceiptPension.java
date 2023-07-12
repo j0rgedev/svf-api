@@ -10,10 +10,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity(name = "receipt_pension")
 public class ReceiptPension {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pension_cod", referencedColumnName = "pension_cod")
     private Pension pension;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receipt_cod", referencedColumnName = "receipt_cod")
     private Receipt receipt;

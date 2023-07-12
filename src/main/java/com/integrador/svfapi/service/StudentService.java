@@ -1,6 +1,7 @@
 package com.integrador.svfapi.service;
 
 import com.integrador.svfapi.classes.ResponseFormat;
+import com.integrador.svfapi.dto.PensionsPayment;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.addStudentBody.RepresentativeInfoDTO;
 import com.integrador.svfapi.dto.addStudentBody.StudentInfoDTO;
@@ -17,6 +18,6 @@ public interface StudentService {
     ResponseEntity<ResponseFormat> deleteStudent(String token, String studentCod);
     // Student pensions
     ResponseEntity<ResponseFormat> studentPensions(String token, boolean status);
-
+    ResponseEntity<ResponseFormat> payPension(String token, PensionsPayment pensionsPayment);
     ResponseEntity<?> getStudent(String token);
 }

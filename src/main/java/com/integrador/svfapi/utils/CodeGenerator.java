@@ -50,6 +50,18 @@ public class CodeGenerator {
         return df.format(number);
     }
 
+    public static String generateNextReceiptCode(String lastReceiptCod){
+        // Obtener el último ID registrado en la base de datos
+
+        // Extraer el número de secuencia del último ID
+        DecimalFormat df = new DecimalFormat("L000000");
+        int number = Integer.parseInt(lastReceiptCod.substring(1,7));
+
+        // Generar el próximo número de secuencia y combinarlo con la parte fija del formato
+        number++;
+        return df.format(number);
+    }
+
     public String createDefaultPasswordFormat(String names, String dni) {
         int currentYear = LocalDate.now().getYear();
         String[] nameParts= names.split(" ");

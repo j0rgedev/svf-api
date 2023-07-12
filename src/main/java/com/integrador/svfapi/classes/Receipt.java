@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -26,7 +27,7 @@ public class Receipt {
     )
     private Timestamp issuanceDate;
     @Column(
-            name = "names",
+            name = "total_amount",
             nullable = false,
             columnDefinition = "decimal(5,2)"
     )
@@ -39,7 +40,7 @@ public class Receipt {
             nullable = false,
             columnDefinition = "date"
     )
-    private Date paymentDate;
+    private LocalDate paymentDate;
     @Column(
             name = "additional_information",
             nullable = false,

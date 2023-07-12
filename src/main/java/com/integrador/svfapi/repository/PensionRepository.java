@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface PensionRepository extends JpaRepository<Pension, Integer> {
     List<Pension> findAllByStudent(Student student);
+    List<Pension> findAllByStudent_StudentCod(String studentCod);
 
     @Query(value = "SELECT month(due_date) AS month, " +
             "if(status = 1, count(*), 0) AS count " +

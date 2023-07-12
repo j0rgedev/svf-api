@@ -1,6 +1,7 @@
 package com.integrador.svfapi.service.impl;
 
 import com.integrador.svfapi.classes.*;
+import com.integrador.svfapi.dto.PensionsPayment;
 import com.integrador.svfapi.dto.StudentPensionDTO;
 import com.integrador.svfapi.dto.addStudentBody.AddStudentBodyDTO;
 import com.integrador.svfapi.dto.getAllStudents.SingleStudentDTO;
@@ -12,13 +13,14 @@ import com.integrador.svfapi.exception.BusinessException;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.StudentService;
 import com.integrador.svfapi.utils.*;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -28,6 +30,9 @@ public class StudentServiceImpl implements StudentService {
     private final JMail jMail;
     private final StudentRepository studentRepository;
     private final RepresentativesRepository representativesRepository;
+    private final ReceiptRepository receiptRepository;
+    private final ReceiptPensionRepository receiptPensionRepository;
+    private final PaymentsRepository paymentsRepository;
     private final StudentRepresentativesRepository studentRepresentativesRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final PensionRepository pensionRepository;
@@ -41,7 +46,7 @@ public class StudentServiceImpl implements StudentService {
             JMail jMail,
             StudentRepository studentRepository,
             RepresentativesRepository representativesRepository,
-            StudentRepresentativesRepository studentRepresentativesRepository,
+            ReceiptRepository receiptRepository, ReceiptPensionRepository receiptPensionRepository, PaymentsRepository paymentsRepository, StudentRepresentativesRepository studentRepresentativesRepository,
             EnrollmentRepository enrollmentRepository,
             PensionRepository pensionRepository,
             UserRepository userRepository,
@@ -51,6 +56,9 @@ public class StudentServiceImpl implements StudentService {
         this.jMail = jMail;
         this.studentRepository = studentRepository;
         this.representativesRepository = representativesRepository;
+        this.receiptRepository = receiptRepository;
+        this.receiptPensionRepository = receiptPensionRepository;
+        this.paymentsRepository = paymentsRepository;
         this.studentRepresentativesRepository = studentRepresentativesRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.pensionRepository = pensionRepository;
@@ -381,6 +389,61 @@ public class StudentServiceImpl implements StudentService {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
     }
+
+    @Override
+    public ResponseEntity<ResponseFormat> payPension(String token, PensionsPayment pensionsPayment){
+        TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
+        if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.STUDENT)) {
+            String studentCod = tokenValidationResult.code();
+            String lastReceiptCode = receiptRepository.findTopByOrderByReceiptCodDesc().getReceiptCod();
+            String newReceiptCode = CodeGenerator.generateNextReceiptCode(lastReceiptCode);
+            List<Pension> studentPensions = pensionRepository.findAllByStudent_StudentCod(studentCod);
+            List<Integer> paidPensionsCodes = pensionsPayment.pensionCod();
+            long totalAmount = 0;
+            // Update pensions status
+            for(Pension pension : studentPensions){
+                if(paidPensionsCodes.contains(pension.getPensionCod())){
+                    pension.setStatus(true);
+                    pensionRepository.save(pension);
+                    totalAmount += pension.getAmount();
+                }
+            }
+
+            Payments payments = paymentsRepository.findById(pensionsPayment.paymentId()).
+                    orElseThrow(()-> new BusinessException(HttpStatus.NOT_FOUND, "El pago no existe"));
+
+            // Create receipt
+            Receipt receipt = new Receipt(
+                    newReceiptCode,
+                    Timestamp.valueOf(LocalDateTime.now()),
+                    totalAmount,
+                    payments,
+                    LocalDate.now(),
+                    null
+            );
+            receiptRepository.save(receipt);
+
+            // Add receipt pensions rows
+            for(Pension pension : studentPensions){
+                if(paidPensionsCodes.contains(pension.getPensionCod())){
+                    ReceiptPension receiptPension = new ReceiptPension();
+                    receiptPension.setReceipt(receipt);
+                    receiptPension.setPension(pension);
+                    receiptPensionRepository.save(receiptPension);
+                }
+            }
+
+            return ResponseEntity.ok().body(new ResponseFormat(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    null
+            ));
+
+        } else {
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, "No autorizado");
+        }
+    }
+
 
     private ResponseEntity<ResponseFormat> getPensionsByStatus(Student student, boolean paid) {
         List<Pension> studentPensions = pensionRepository.findAllByStudent(student);
