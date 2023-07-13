@@ -108,7 +108,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollment.setTermsConditionsId(thisYearId);
                 enrollmentRepository.saveAndFlush(enrollment);
 
-                createStudentPensions(studentCod);
+                //createStudentPensions(studentCod);
             }
             HashMap<String, String> data = new HashMap<>();
             data.put("enrollmentId", newEnrollmentId);
