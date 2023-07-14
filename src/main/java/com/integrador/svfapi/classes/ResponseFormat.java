@@ -1,5 +1,6 @@
 package com.integrador.svfapi.classes;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 public record ResponseFormat(Integer status, String message, Object data) {

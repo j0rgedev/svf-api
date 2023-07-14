@@ -4,33 +4,32 @@ import com.integrador.svfapi.classes.Enrollment;
 import com.integrador.svfapi.classes.Pension;
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Student;
+import com.integrador.svfapi.controllers.EnrollmentController;
 import com.integrador.svfapi.dto.PaymentDTO;
 import com.integrador.svfapi.dto.enrollmentProcessBody.EnrollmentDTO;
 import com.integrador.svfapi.dto.enrollmentProcessBody.LevelDetailsDTO;
 import com.integrador.svfapi.repository.*;
 import com.integrador.svfapi.service.impl.EnrollmentServiceImpl;
+import com.integrador.svfapi.service.impl.StudentServiceImpl;
 import com.integrador.svfapi.utils.JwtUtil;
 import com.integrador.svfapi.utils.TokenType;
 import com.integrador.svfapi.utils.TokenValidationResult;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.Map;
 
-
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class EnrollmentServiceTest {
 
     @Mock
@@ -41,65 +40,77 @@ class EnrollmentServiceTest {
     private StudentRepository studentRepository;
     @Mock
     private PensionRepository pensionRepository;
-    @Mock
-    private TermsAndConditionsRepository termsAndConditionsRepository;
-    @Mock
-    private TermsDetailsRepository termsDetailsRepository;
-    @Mock
-    private LevelCostsRepository levelCostsRepository;
+
     @InjectMocks
     private EnrollmentServiceImpl enrollmentService;
 
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @DisplayName("Creación de la matrícula y pensiones de un estudiante")
     @Test
-    void testEnrollmentProcess_WithValidToken_ReturnsEnrollmentId() {
-        
+    void createEnrollment() {
 
-        String accessToken = "mockAccessToken";
-
-        TokenValidationResult tokenValidationResult = new TokenValidationResult(
-                true, "SVF1234", TokenType.STUDENT);
-
-        Enrollment lastEnrollment = new Enrollment();
-        lastEnrollment.setEnrollmentId("E00000");
-
+        String token = "student_token";
+        String studentId = "SVF0007";
         Student student = new Student();
-        student.setStudentCod("SVF1234");
+        student.setStudentCod(studentId);
         student.setCurrentLevel("Primaria");
 
         EnrollmentDTO enrollmentDTO = new EnrollmentDTO(
                 150.00,
                 LocalDate.now(),
-                new LevelDetailsDTO("LP2023", "Primaria"),
-                new PaymentDTO("P20", "Pago Efectivo"));
+                new LevelDetailsDTO("LI23", "Inicial"),
+                new PaymentDTO("P10", "Tarjeta de crédito o débito")
+        );
 
-        HashMap<String, String> data = new HashMap<>();
-        data.put("enrollmentId", "E10000");
-        // Objeto esperado
-        ResponseEntity<ResponseFormat> expected = ResponseEntity.ok().body(new ResponseFormat(
-                HttpStatus.OK.value(),
-                HttpStatus.OK.getReasonPhrase(),
-                data));
+        Pension pension = new Pension(
+                1,
+                LocalDate.now(),
+                350.00,
+                false,
+                student
+        );
 
-        Mockito.when(jwtUtil.validateToken(accessToken)).thenReturn(tokenValidationResult);
-        Mockito.when(enrollmentRepository
-                .findByStudentCodAndTermsConditionsId(Mockito.anyString(), Mockito.anyString()))
+        // Validación del token
+        Mockito.when(jwtUtil.validateToken(token))
+                .thenReturn(new TokenValidationResult(true, studentId, TokenType.STUDENT));
+
+        // Validación de que el estudiante no tenga una matrícula activa
+        Mockito.when(enrollmentRepository.findByStudentCodAndTermsConditionsId(studentId, "T2023"))
                 .thenReturn(null);
-        Mockito.when(enrollmentRepository.findTopByOrderByEnrollmentIdDesc())
-                .thenReturn(lastEnrollment);
-        Mockito.when(studentRepository.findById(Mockito.anyString())).thenReturn(Optional.of(student));
-        Mockito.when(enrollmentService.enrollmentProcess(
-                accessToken, enrollmentDTO))
-                .thenReturn(ResponseEntity.ok().body(new ResponseFormat(
-                        HttpStatus.OK.value(),
-                        HttpStatus.OK.getReasonPhrase(),
-                        data)));
 
-        Mockito.doNothing().when(enrollmentRepository.saveAndFlush(Mockito.any(Enrollment.class)));
+        // Obtiene la última matrícula registrada
+        String lastEnrollmentId = "E00001";
+        Enrollment lastEnrollment = new Enrollment();
+        lastEnrollment.setEnrollmentId(lastEnrollmentId);
+        Mockito.when(enrollmentRepository.findTopByOrderByEnrollmentIdDesc()).thenReturn(lastEnrollment);
 
-        //Objeto obtenido
-        ResponseEntity<ResponseFormat> result = enrollmentService.enrollmentProcess(
-                accessToken, enrollmentDTO);
+        // Creación de la nueva matrícula
+        String newEnrollmentId = "E00002";
+        Mockito.when(enrollmentRepository.saveAndFlush(Mockito.any(Enrollment.class)))
+                .thenReturn(new Enrollment(newEnrollmentId, studentId, "P10", true, LocalDate.now(), 150.00, "T2023"));
 
-        Assertions.assertEquals(expected, result);
+        // Obtener el estudiante
+        Mockito.when(studentRepository.findById(studentId))
+                .thenReturn(java.util.Optional.of(student));
+
+        // Creación de la nueva pensión
+        Mockito.when(pensionRepository.saveAndFlush(Mockito.any(Pension.class)))
+                .thenReturn(pension);
+
+        // Ejecutar el método que se está probando
+        ResponseEntity<ResponseFormat> response = enrollmentService.enrollmentProcess(token, enrollmentDTO);
+
+        // Verificar que se haya creado una nueva inscripción
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+
+        Map<String, Object> data = (HashMap<String, Object>) response.getBody().data();
+        Assertions.assertNotNull(data);
+        Assertions.assertEquals(newEnrollmentId, data.get("enrollmentId"));
+        System.out.println("Test de creación de matrícula exitoso");
     }
 }
