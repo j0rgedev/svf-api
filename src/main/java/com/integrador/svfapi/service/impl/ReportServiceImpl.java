@@ -11,14 +11,9 @@ import com.integrador.svfapi.service.ReportService;
 import com.integrador.svfapi.utils.*;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -42,13 +37,15 @@ public class ReportServiceImpl implements ReportService {
 
     private final StudentRepository studentRepository;
     private final JasperReportManager reportManager;
+    private final DataSource dataSource;
     private final JwtUtil jwtUtil;
     private final PensionRepository pensionRepository;
 
     @Autowired
-    public ReportServiceImpl(StudentRepository studentRepository, JasperReportManager reportManager, JwtUtil jwtUtil, PensionRepository pensionRepository) {
+    public ReportServiceImpl(StudentRepository studentRepository, JasperReportManager reportManager, DataSource dataSource, JwtUtil jwtUtil, PensionRepository pensionRepository) {
         this.studentRepository = studentRepository;
         this.reportManager = reportManager;
+        this.dataSource = dataSource;
         this.jwtUtil = jwtUtil;
         this.pensionRepository = pensionRepository;
     }
@@ -93,7 +90,7 @@ public class ReportServiceImpl implements ReportService {
             String extension = params.get("tipo").toString().equalsIgnoreCase(ReportType.EXCEL.name()) ? ".xlsx" : ".pdf";
             dto.setFileName(fileName + extension);
             try {
-                DataSource dataSource = null;
+                //DataSource dataSource = null;
                 ByteArrayOutputStream stream = reportManager.export(fileName, params.get("tipo").toString(), params, dataSource.getConnection());
                 byte[] bs = stream.toByteArray();
                 dto.setStream(new ByteArrayInputStream(bs));
@@ -157,5 +154,34 @@ public class ReportServiceImpl implements ReportService {
         } catch (IOException e) {
             throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el reporte");
         }
+    }
+
+    @Override
+    public ResponseEntity<Resource> receiptReport(Map<String, Object> params) {
+
+        String fileName ="recibo";
+        ReportDTO reportDTO = new ReportDTO();
+        String extension = params.get("tipo").toString().equalsIgnoreCase(ReportType.EXCEL.name()) ? ".xlsx" : ".pdf";
+        reportDTO.setFileName(fileName + extension);
+        try {
+            ByteArrayOutputStream stream = reportManager.export(fileName, params.get("tipo").toString(), params, dataSource.getConnection());
+            byte[] bs = stream.toByteArray();
+            reportDTO.setStream(new ByteArrayInputStream(bs));
+            reportDTO.setLength(bs.length);
+
+            InputStreamResource streamResource = new InputStreamResource(reportDTO.getStream());
+            MediaType mediaType = null;
+            if (params.get("tipo").toString().equalsIgnoreCase(ReportType.EXCEL.name())) {
+                mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            } else {
+                mediaType = MediaType.APPLICATION_PDF;
+            }
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "inline; filename=\"" + reportDTO.getFileName() + "\"")
+                    .contentLength(reportDTO.getLength()).contentType(mediaType).body(streamResource);
+        } catch (IOException | JRException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
