@@ -158,9 +158,9 @@ public class AdminController {
     public ResponseEntity<InputStreamResource> downloadPensions(
             @RequestHeader("Authorization") @NotBlank String token
     ) {
-//        // Check if the token is valid
-//        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//        token = token.replace("Bearer ", "");
+        // Check if the token is valid
+        if (!token.startsWith("Bearer ")) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        token = token.replace("Bearer ", "");
         return reportServiceImpl.pensionsReport(token);
     }
 }

@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @Entity
 public class Pension {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pension_cod")
     private int pensionCod;
     @Column(name = "due_date")
