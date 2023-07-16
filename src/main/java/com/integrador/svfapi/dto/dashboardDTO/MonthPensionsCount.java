@@ -8,5 +8,5 @@ import lombok.Setter;
 @Data
 public class MonthPensionsCount {
     private int monthNumber;
-    private long count;
+    private int count;
 }

@@ -108,6 +108,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollment.setTermsConditionsId(thisYearId);
                 enrollmentRepository.saveAndFlush(enrollment);
 
+                updateStudentInformation(studentCod);
                 createStudentPensions(studentCod);
             }
             HashMap<String, String> data = new HashMap<>();
@@ -116,6 +117,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         } else {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
+    }
+
+    private void updateStudentInformation(String studentCod){
+        Student student = studentRepository.getReferenceById(studentCod);
+        student.setEnrolled(true);
+        String[] levelInformation = StudentServiceImpl.calculateNewLevelAndGrade(student.getCurrentGrade(), student.getCurrentLevel());
+        student.setCurrentLevel(levelInformation[1]);
+        student.setCurrentGrade(levelInformation[0].charAt(0));
+        studentRepository.saveAndFlush(student);
     }
 
     // Función que permite crear las pensiones de un estudiante

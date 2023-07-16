@@ -3,15 +3,14 @@ package com.integrador.svfapi.service.impl;
 import com.integrador.svfapi.classes.Pension;
 import com.integrador.svfapi.classes.ResponseFormat;
 import com.integrador.svfapi.classes.Student;
+import com.integrador.svfapi.dto.StatsEnrollmentCountDTO;
 import com.integrador.svfapi.dto.dashboardDTO.*;
 import com.integrador.svfapi.exception.BusinessException;
+import com.integrador.svfapi.repository.EnrollmentRepository;
 import com.integrador.svfapi.repository.PensionRepository;
 import com.integrador.svfapi.repository.StudentRepository;
 import com.integrador.svfapi.service.StatisticsService;
-import com.integrador.svfapi.utils.CodeValidator;
-import com.integrador.svfapi.utils.JwtUtil;
-import com.integrador.svfapi.utils.TokenType;
-import com.integrador.svfapi.utils.TokenValidationResult;
+import com.integrador.svfapi.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,12 +27,14 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private final StudentRepository studentRepository;
     private final PensionRepository pensionRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public StatisticsServiceImpl(StudentRepository studentRepository, PensionRepository pensionRepository, JwtUtil jwtUtil) {
+    public StatisticsServiceImpl(StudentRepository studentRepository, PensionRepository pensionRepository, EnrollmentRepository enrollmentRepository, JwtUtil jwtUtil) {
         this.studentRepository = studentRepository;
         this.pensionRepository = pensionRepository;
+        this.enrollmentRepository = enrollmentRepository;
         this.jwtUtil = jwtUtil;
     }
 
@@ -42,6 +43,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         TokenValidationResult tokenValidationResult = jwtUtil.validateToken(token);
         if (tokenValidationResult.isValid() && tokenValidationResult.tokenType().equals(TokenType.ADMIN)) {
             List<MonthPensionsCount> monthPensionsCount = getPensionQuantity(monthNumber);
+            List<StatsEnrollmentCountDTO> statsEnrollmentCountDTO = getEnrollmentCount(monthNumber);
 
             List<Student> lastFiveStudent;
             if (monthNumber == 0) {
@@ -65,6 +67,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                     HttpStatus.OK.getReasonPhrase(),
                     new GeneralStatistics(
                             monthPensionsCount,
+                            statsEnrollmentCountDTO,
                             lastEnrolledStudentsDTO,
                             enrollmentCountDTO
                     )
@@ -78,22 +81,20 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<MonthPensionsCount> monthPensionsCounts = new ArrayList<>();
 
         if (month == 0) {
-            List<Object[]> pensionsAmount = pensionRepository.getPensionsQuantity();
+            List<PensionsCountByMonth> pensionsAmount = pensionRepository.getPensionsQuantity();
 
-            for (Object[] pensionAmount : pensionsAmount) {
+            for (PensionsCountByMonth pensionAmount : pensionsAmount) {
                 monthPensionsCounts.add(new MonthPensionsCount(
-                        (int) pensionAmount[0],
-                        (Long) pensionAmount[1]
+                        pensionAmount.getMonth(),
+                        pensionAmount.getCount()
                 ));
             }
         } else {
-            List<Object[]> pensionsAmountByMonth = pensionRepository.getPensionsQuantityByMonth(month);
-            for (Object[] pensionAmount : pensionsAmountByMonth) {
-                monthPensionsCounts.add(new MonthPensionsCount(
-                        (int) pensionAmount[0],
-                        (Long) pensionAmount[1]
-                ));
-            }
+            PensionsCountByMonth pensionsAmountByMonth = pensionRepository.getPensionsQuantityByMonth(month);
+            monthPensionsCounts.add(new MonthPensionsCount(
+                    pensionsAmountByMonth.getMonth(),
+                    pensionsAmountByMonth.getCount()
+            ));
         }
         return monthPensionsCounts;
     }
@@ -122,6 +123,29 @@ public class StatisticsServiceImpl implements StatisticsService {
         }
         return new EnrollmentCountDTO(totalStudents, enrolled, notEnrolled);
     }
+
+    private List<StatsEnrollmentCountDTO> getEnrollmentCount(int month){
+        List<StatsEnrollmentCountDTO> enrollmentCountList = new ArrayList<>();
+        if (month == 0) {
+            List<EnrollmentCount> enrollmentCountByYearAndLevelList = enrollmentRepository.getEnrollmentCount();
+            for (EnrollmentCount enrollmentCount : enrollmentCountByYearAndLevelList) {
+                enrollmentCountList.add(new StatsEnrollmentCountDTO(
+                        enrollmentCount.getMonth(),
+                        enrollmentCount.getCount()
+                ));
+            }
+        } else {
+            List<EnrollmentCountByMonth> enrollmentCountByMonthList = enrollmentRepository.getEnrollmentCountByMonth(month);
+            for (EnrollmentCountByMonth enrollmentCountByMonth : enrollmentCountByMonthList) {
+                enrollmentCountList.add(new StatsEnrollmentCountDTO(
+                        enrollmentCountByMonth.getDay(),
+                        enrollmentCountByMonth.getCount()
+                ));
+            }
+        }
+        return enrollmentCountList;
+    }
+
 
     @Override
     public ResponseEntity<ResponseFormat> getEnrollmentStatistics(String token) {

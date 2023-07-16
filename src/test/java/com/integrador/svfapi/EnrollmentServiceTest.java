@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,7 +62,7 @@ class EnrollmentServiceTest {
 
         EnrollmentDTO enrollmentDTO = new EnrollmentDTO(
                 150.00,
-                LocalDate.now(),
+                LocalDateTime.now(),
                 new LevelDetailsDTO("LI23", "Inicial"),
                 new PaymentDTO("P10", "Tarjeta de crédito o débito")
         );
@@ -91,7 +92,7 @@ class EnrollmentServiceTest {
         // Creación de la nueva matrícula
         String newEnrollmentId = "E00002";
         Mockito.when(enrollmentRepository.saveAndFlush(Mockito.any(Enrollment.class)))
-                .thenReturn(new Enrollment(newEnrollmentId, studentId, "P10", true, LocalDate.now(), 150.00, "T2023"));
+                .thenReturn(new Enrollment(newEnrollmentId, studentId, "P10", true, LocalDateTime.now(), 150.00, "T2023"));
 
         // Obtener el estudiante
         Mockito.when(studentRepository.findById(studentId))

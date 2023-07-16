@@ -163,12 +163,4 @@ public class AdminController {
         token = token.replace("Bearer ", "");
         return reportServiceImpl.pensionsReport(token);
     }
-
-    @PostMapping("/receipt")
-    public ResponseEntity<Resource> receiptDownload(
-            @RequestParam Map<String, Object> params
-    ) {
-        return reportServiceImpl.receiptReport(params);
-    }
-
 }

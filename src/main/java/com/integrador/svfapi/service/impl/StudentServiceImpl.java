@@ -473,6 +473,7 @@ public class StudentServiceImpl implements StudentService {
         }
 
         List<PensionDTO> pensions = new ArrayList<>();
+        List<PaidPensionDto> paidPensions = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
         double totalDebt = 0;
         int i = -1;
@@ -482,14 +483,17 @@ public class StudentServiceImpl implements StudentService {
             if (paid && isPaid) {
                 String pensionName = pensionNames[i];
 
-                PensionDTO pensionDTO = new PensionDTO(
+                String receiptCode = getReceiptCodeFromPension(pension);
+
+                PaidPensionDto paidPensionDto = new PaidPensionDto(
                         pension.getPensionCod(),
                         pensionName,
                         pension.getAmount(),
                         pension.getDueDate(),
-                        "Pagado"
+                        receiptCode
                 );
-                pensions.add(pensionDTO);
+
+                paidPensions.add(paidPensionDto);
             } else if (!paid && !isPaid) {
                 totalDebt += pension.getAmount();
                 String status = pension.getDueDate().isBefore(currentDate) ? "Vencido" : "Pendiente";
@@ -511,9 +515,14 @@ public class StudentServiceImpl implements StudentService {
                 HttpStatus.OK.getReasonPhrase(),
                 new StudentPensionDTO(
                         paid ? 0 : totalDebt,
-                        Collections.singletonList(pensions)
+                        paid ? Collections.singletonList(paidPensions) : Collections.singletonList(pensions)
                 )
         ));
+    }
+
+    private String getReceiptCodeFromPension(Pension pension){
+        ReceiptPension receiptPension = receiptPensionRepository.findByPension(pension);
+        return receiptPension.getReceipt().getReceiptCod();
     }
 
     private record PensionDTO(
@@ -522,6 +531,14 @@ public class StudentServiceImpl implements StudentService {
             Double pensionAmount,
             LocalDate dueDate,
             String status
+    ){ }
+
+    private record PaidPensionDto(
+            int pensionCod,
+            String pensionName,
+            Double pensionAmount,
+            LocalDate dueDate,
+            String receiptId
     ){ }
 
     /*
@@ -535,7 +552,7 @@ public class StudentServiceImpl implements StudentService {
      * @param currentLevel Nivel actual del estudiante
      * @return ResponseEntity con un objeto personalizado para la respuesta de tipo ResponseFormat.
      */
-    protected String[] calculateNewLevelAndGrade(char currentGrade, String currentLevel) {
+    public static String[] calculateNewLevelAndGrade(char currentGrade, String currentLevel) {
 
         String[] newLevelAndGrade = new String[2];
 

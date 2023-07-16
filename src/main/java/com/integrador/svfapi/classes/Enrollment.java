@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -43,7 +44,7 @@ public class Enrollment {
             nullable = false,
             columnDefinition = "DATE"
     )
-    LocalDate date;
+    LocalDateTime date;
     @Column(
             name = "amount",
             nullable = false,
